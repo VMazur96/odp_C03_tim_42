@@ -34,13 +34,13 @@ export class AuthController {
 
       const result = await this.authService.prijava(username, password);
 
-      // Proveravamo da li je prijava uspešna
+      // Provera da li je prijava uspesna
       if (result.id !== 0) {
         // Kreiranje jwt tokena
         const token = jwt.sign(
           { 
             id: result.id, 
-            korisnickoIme: result.username, 
+            username: result.username, 
             role: result.role,
           }, process.env.JWT_SECRET ?? "", { expiresIn: '6h' });
 

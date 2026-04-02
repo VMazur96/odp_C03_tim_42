@@ -13,11 +13,11 @@ const decodeJWT = (token: string): JwtTokenClaims | null => {
         const decoded = jwtDecode<JwtTokenClaims>(token);
         
         // Proveri da li token ima potrebna polja
-        if (decoded.id && decoded.korisnickoIme && decoded.uloga) {
+        if (decoded.id && decoded.username && decoded.role) {
             return {
                 id: decoded.id,
-                korisnickoIme: decoded.korisnickoIme,
-                uloga: decoded.uloga
+                username: decoded.username,
+                role: decoded.role
             };
         }
         
@@ -53,6 +53,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // Proveri da li je token istekao
             if (isTokenExpired(savedToken)) {
                 ObrišiVrednostPoKljuču("authToken");
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setIsLoading(false);
                 return;
             }
@@ -62,8 +63,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 setToken(savedToken);
                 setUser({
                     id: claims.id,
-                    korisnickoIme: claims.korisnickoIme,
-                    uloga: claims.uloga
+                    username: claims.username,
+                    role: claims.role
                 });
             } else {
                 ObrišiVrednostPoKljuču("authToken");
@@ -80,8 +81,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setToken(newToken);
             setUser({
                 id: claims.id,
-                korisnickoIme: claims.korisnickoIme,
-                uloga: claims.uloga
+                username: claims.username,
+                role: claims.role
             });
             SačuvajVrednostPoKljuču("authToken", newToken);
         } else {
