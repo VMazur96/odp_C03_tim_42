@@ -4,26 +4,25 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 import db from "../../connection/DbConnectionPool";
 
 export class UserRepository implements IUserRepository {
-  async create(user: User): Promise<User> {
+async create(user: User): Promise<User> {
     try {
       const query = `
-        INSERT INTO users (korisnickoIme, uloga, lozinka) 
-        VALUES (?, ?, ?)
+        INSERT INTO users (username, email, password_hash, full_name, profile_image, role) 
+        VALUES (?, ?, ?, ?, ?, ?)
       `;
 
       const [result] = await db.execute<ResultSetHeader>(query, [
-        user.korisnickoIme,
-        user.uloga,
-        user.lozinka,
+        user.username,
+        user.email,
+        user.password_hash,
+        user.full_name,
+        user.profile_image,
+        user.role
       ]);
 
-
       if (result.insertId) {
-        // Vraćamo novog korisnika sa dodeljenim ID-om
-        return new User(result.insertId, user.korisnickoIme, user.uloga, user.lozinka);
+        return new User(result.insertId, user.username, user.email, user.password_hash, user.full_name, user.profile_image, user.role);
       }
-
-      // Vraćamo prazan objekat ako kreiranje nije uspešno
       return new User();
     } catch (error) {
       console.error('Error creating user:', error);
@@ -38,7 +37,7 @@ export class UserRepository implements IUserRepository {
 
       if (rows.length > 0) {
         const row = rows[0];
-        return new User(row.id, row.korisnickoIme, row.uloga, row.lozinka);
+      return new User(row.id, row.username, row.email, row.password_hash, row.full_name, row.profile_image, row.role);
       }
 
       return new User();
@@ -47,24 +46,34 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  async getByUsername(korisnickoIme: string): Promise<User> {
+  async getByUsername(username: string): Promise<User> {
     try {
-      const query = `
-        SELECT id, korisnickoIme, uloga, lozinka
-        FROM users 
-        WHERE korisnickoIme = ?
-      `;
-
-      const [rows] = await db.execute<RowDataPacket[]>(query, [korisnickoIme]);
-
+      const query = `SELECT * FROM users WHERE username = ?`;
+      const [rows] = await db.execute<RowDataPacket[]>(query, [username]);
+      
       if (rows.length > 0) {
         const row = rows[0];
-        return new User(row.id, row.korisnickoIme, row.uloga, row.lozinka);
+        return new User(row.id, row.username, row.email, row.password_hash, row.full_name, row.profile_image, row.role);
       }
 
       return new User();
     } catch (error) {
       console.log("user get by username: " + error);
+      return new User();
+    }
+  }
+
+  async getByEmail(email: string): Promise<User> {
+    try {
+      const query = `SELECT * FROM users WHERE email = ?`;
+      const [rows] = await db.execute<RowDataPacket[]>(query, [email]);
+
+      if (rows.length > 0) {
+        const row = rows[0];
+        return new User(row.id, row.username, row.email, row.password_hash, row.full_name, row.profile_image, row.role);
+      }
+      return new User();
+    } catch {
       return new User();
     }
   }
@@ -86,21 +95,23 @@ export class UserRepository implements IUserRepository {
     try {
       const query = `
         UPDATE users 
-        SET korisnickoIme = ?, lozinka = ? 
+        SET username = ?, email = ?, password_hash = ?, full_name = ?, profile_image = ?, role = ?
         WHERE id = ?
       `;
 
       const [result] = await db.execute<ResultSetHeader>(query, [
-        user.korisnickoIme,
-        user.lozinka,
-        user.uloga,
+        user.username,
+        user.email,
+        user.password_hash,
+        user.full_name,
+        user.profile_image,
+        user.role,
         user.id,
       ]);
 
       if (result.affectedRows > 0) {
         return user;
       }
-
       return new User();
     } catch {
       return new User();

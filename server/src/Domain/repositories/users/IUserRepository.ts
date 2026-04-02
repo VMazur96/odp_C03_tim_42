@@ -52,4 +52,6 @@ export interface IUserRepository {
    * @returns Promise koji vraća true ako korisnik postoji, false inače
    */
   exists(id: number): Promise<boolean>;
+
+  getByEmail(email: string): Promise<User>; //pronalazi korisnika po email adresi
 }

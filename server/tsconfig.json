@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "./", //Dodato
     "sourceMap": true,
     "target": "esnext",
     "module": "commonjs",

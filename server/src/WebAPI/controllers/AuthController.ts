@@ -23,17 +23,16 @@ export class AuthController {
    */
   private async prijava(req: Request, res: Response): Promise<void> {
     try {
-      const { korisnickoIme, lozinka } = req.body;
+      const { username, password } = req.body;
 
-      // TODO: Validacija input parametara
-      // const rezultat = authPrijavaValidator(korisnickoIme, lozinka);
+      // TODO: Provera da li su polja poslata
 
-      // if (!rezultat.uspesno) {
-      //   res.status(400).json({ success: false, message: rezultat.poruka });
-      //   return;
-      // }
+      if (!username || !password) {
+        res.status(400).json({ success: false, message: 'Korisničko ime i lozinka su obavezni.' });
+        return;
+      }
 
-      const result = await this.authService.prijava(korisnickoIme, lozinka);
+      const result = await this.authService.prijava(username, password);
 
       // Proveravamo da li je prijava uspešna
       if (result.id !== 0) {
@@ -41,8 +40,8 @@ export class AuthController {
         const token = jwt.sign(
           { 
             id: result.id, 
-            korisnickoIme: result.korisnickoIme, 
-            uloga: result.uloga,
+            korisnickoIme: result.username, 
+            role: result.role,
           }, process.env.JWT_SECRET ?? "", { expiresIn: '6h' });
 
         res.status(200).json({success: true, message: 'Uspešna prijava', data: token});
@@ -63,17 +62,34 @@ export class AuthController {
    */
   private async registracija(req: Request, res: Response): Promise<void> {
     try {
-      const { korisnickoIme, lozinka, uloga } = req.body;
+      const { username, email, password, full_name, profile_image } = req.body;
       
       // TODO: Validator podataka za registraciju
       // const rezultat = authRegistracijaValidator(korisnickoIme, lozinka);
 
-      // if (!rezultat.uspesno) {
-      //   res.status(400).json({ success: false, message: rezultat.poruka });
-      //   return;
-      // }
+      if (!username || username.length < 3 || username.length > 40) {
+        res.status(400).json({ success: false, message: 'Korisničko ime nije validno (3-40 karaktera).' });
+        return;
+      }
 
-      const result = await this.authService.registracija(korisnickoIme, uloga, lozinka);
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      if (!email || !emailRegex.test(email)) {
+        res.status(400).json({ success: false, message: 'Email format nije validan.' });
+        return;
+      }
+      
+      if (!password || password.length < 8) {
+        res.status(400).json({ success: false, message: 'Lozinka mora imati najmanje 8 karaktera.' });
+        return;
+      }
+      
+      if (!full_name) {
+        res.status(400).json({ success: false, message: 'Ime i prezime je obavezno.' });
+        return;
+      }
+
+      const result = await this.authService.registracija(username, email, password, full_name, profile_image);
       
       // Proveravamo da li je registracija uspešna
       if (result.id !== 0) {
@@ -81,8 +97,8 @@ export class AuthController {
         const token = jwt.sign(
           { 
             id: result.id, 
-            korisnickoIme: result.korisnickoIme, 
-            uloga: result.uloga,
+            username: result.username, 
+            role: result.role,
           }, process.env.JWT_SECRET ?? "", { expiresIn: '6h' });
 
 

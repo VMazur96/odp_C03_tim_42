@@ -9,32 +9,41 @@ export class AuthService implements IAuthService {
 
   public constructor(private userRepository: IUserRepository) {}
 
-  async prijava(korisnickoIme: string, lozinka: string): Promise<UserAuthDataDto> {
-    const user = await this.userRepository.getByUsername(korisnickoIme);
+  async prijava(username: string, lozinka: string): Promise<UserAuthDataDto> {
+    const user = await this.userRepository.getByUsername(username);
 
-    if (user.id !== 0 && await bcrypt.compare(lozinka, user.lozinka)) {
-      return new UserAuthDataDto(user.id, user.korisnickoIme, user.uloga);
+    // Proveravamo da li korisnik postoji i da li se lozinka poklapa sa hash-om iz baze
+    if (user.id !== 0 && await bcrypt.compare(lozinka, user.password_hash)) {
+      return new UserAuthDataDto(user.id, user.username, user.role);
     }
 
     return new UserAuthDataDto(); // Neispravno korisničko ime ili lozinka
   }
 
-  async registracija(korisnickoIme: string, uloga: string, lozinka: string): Promise<UserAuthDataDto> {
-    const existingUser = await this.userRepository.getByUsername(korisnickoIme);
+  async registracija(username: string, email: string, lozinka: string, fullName: string, profileImage?: string): Promise<UserAuthDataDto> {
+    //Proveravamo da li je username vec zauzet
+    const existingUser = await this.userRepository.getByUsername(username);
     
     if (existingUser.id !== 0) {
       return new UserAuthDataDto(); // Korisnik već postoji
     }
 
+    // Proveravamo da li je email vec zauzet
+    const existingEmail = await this.userRepository.getByEmail(email);
+
+    if (existingEmail.id !== 0){ 
+      return new UserAuthDataDto(); // Korisnik već postoji
+    }
+    
     // Hash-ujemo lozinku pre čuvanja
     const hashedPassword = await bcrypt.hash(lozinka, this.saltRounds);
 
     const newUser = await this.userRepository.create(
-      new User(0, korisnickoIme, uloga, hashedPassword)
+      new User(0, username, email, hashedPassword, fullName, profileImage || null, 'player')
     );
 
     if (newUser.id !== 0) {
-      return new UserAuthDataDto(newUser.id, newUser.korisnickoIme, newUser.uloga);
+      return new UserAuthDataDto(newUser.id, newUser.username, newUser.role);
     }
 
     return new UserAuthDataDto(); // Registracija nije uspela

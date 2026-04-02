@@ -3,8 +3,8 @@ import jwt from "jsonwebtoken";
 
 interface JwtPayload {
   id: number;
-  korisnickoIme: string;
-  uloga: string;
+  username: string;
+  role: string;
 }
 
 declare global {
