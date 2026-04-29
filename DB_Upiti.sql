@@ -2,7 +2,7 @@
 CREATE DATABASE IF NOT EXISTS forgeboard_db;
 USE forgeboard_db;
 
--- 1. Tabela Korisnici (Users) sa validacijom dužine username-a
+-- 1. Tabela Korisnici (Users) sa validacijom duzine username-a
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(40) NOT NULL UNIQUE,
@@ -70,7 +70,7 @@ CREATE TABLE sessions (
     FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 
--- 7. Treća M:N Relacija: Sesije <-> Korisnici/Učesnici (session_players)
+-- 7. Treca M:N Relacija: Sesije <-> Korisnici/Ucesnici (session_players)
 CREATE TABLE session_players (
     session_id INT NOT NULL,
     user_id INT NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE reviews (
     CHECK (LENGTH(body) >= 50 AND LENGTH(body) <= 3000)
 );
 
--- 9. Tabela Audit Logs (Za praćenje logout-a i admin aktivnosti)
+-- 9. Tabela Audit Logs (Za pracenje logout-a i admin aktivnosti)
 CREATE TABLE audit_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -105,3 +105,8 @@ CREATE TABLE audit_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+-- Dodavanje Indexa za optimizaciju pretrage i filtriranja kataloga igara
+CREATE INDEX idx_games_players ON games(min_players, max_players);
+CREATE INDEX idx_games_duration ON games(duration_min);
+CREATE INDEX idx_games_weight ON games(weight);
