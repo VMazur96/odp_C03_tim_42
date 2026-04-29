@@ -17,4 +17,6 @@ export interface IAuthService {
    * @returns Podatke o korisniku ako je registracija uspešna, ili prazan objekat ako nije.
   */
   registracija(username: string, email: string, lozinka: string, fullName: string, profileImage?: string): Promise<UserAuthDataDto>;
+
+  logout(userId: number): Promise<boolean>;
 }

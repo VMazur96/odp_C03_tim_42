@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { GameDto } from '../../models/games/GameDto';
 import { gameApi } from '../../api_services/games/GameAPIService';
+import AuthContext from '../../contexts/auth/AuthContext';
 
 export default function KatalogStranica() {
   const [igre, setIgre] = useState<GameDto[]>([]);
   const [ucitavanje, setUcitavanje] = useState<boolean>(true);
+  
+  const authContext = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const pronadjiIgre = async () => {
@@ -15,17 +20,33 @@ export default function KatalogStranica() {
     pronadjiIgre();
   }, []);
 
+  // DODATO: Funkcija za klik na dugme
+  const handleLogout = async () => {
+    if (authContext) {
+      await authContext.logout();
+      navigate("/login");
+    }
+  };
+
   if (ucitavanje) {
     return <div className="form-container">Ucitavanje kataloga...</div>;
   }
 
   return (
-    // Dodat sivi background preko celog ekrana da se slaze uz navigaciju
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-6xl mx-auto bg-white shadow-2xl rounded-2xl p-8 text-center">
-        <h1 className="text-4xl font-extrabold text-gray-800 mb-8 tracking-wide">
-          Globalni katalog igara
-        </h1>
+        
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-extrabold text-gray-800 tracking-wide">
+            Globalni katalog igara
+          </h1>
+          <button 
+            onClick={handleLogout}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition shadow-md"
+          >
+            Odjavi se
+          </button>
+        </div>
         
         <div className="games-grid">
           {igre.length === 0 ? (

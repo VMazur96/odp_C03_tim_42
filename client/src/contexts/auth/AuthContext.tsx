@@ -4,6 +4,7 @@ import type { AuthContextType } from '../../types/auth/AuthContext';
 import type { AuthUser } from '../../types/auth/AuthUser';
 import { ObrišiVrednostPoKljuču, PročitajVrednostPoKljuču, SačuvajVrednostPoKljuču } from '../../helpers/local_storage';
 import type { JwtTokenClaims } from '../../types/auth/JwtTokenClaims';
+import axios from "axios";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -90,10 +91,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    const logout = () => {
-        setToken(null);
-        setUser(null);
-        ObrišiVrednostPoKljuču("authToken");
+    const logout = async () => {
+        
+    try {
+        const currentToken = PročitajVrednostPoKljuču("authToken");
+            
+        if (currentToken) {
+            await axios.post(`${import.meta.env.VITE_API_URL}auth/logout`, {}, {
+                headers: { Authorization: `Bearer ${currentToken}` }
+            });
+        }
+    } catch (error) {
+        console.error("Greska pri odjavi na serveru", error);
+    }
+
+    setToken(null);
+    setUser(null);
+    ObrišiVrednostPoKljuču("authToken");
     };
 
     const isAuthenticated = !!user && !!token;

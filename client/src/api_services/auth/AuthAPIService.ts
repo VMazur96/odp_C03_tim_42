@@ -53,4 +53,17 @@ export const authApi: IAuthAPIService = {
       };
     }
   },
+
+  async odjava(): Promise<void> {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        await axios.post(`${API_URL}/logout`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (error) {
+      console.error("Greska prilikom odjave na serveru:", error);
+    }
+  }
 };

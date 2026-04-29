@@ -2,6 +2,7 @@ import { UserAuthDataDto } from "../../Domain/DTOs/auth/UserAuthDataDto";
 import { User } from "../../Domain/models/User";
 import { IUserRepository } from "../../Domain/repositories/users/IUserRepository";
 import { IAuthService } from "../../Domain/services/auth/IAuthService";
+import db from "../../Database/connection/DbConnectionPool";
 import bcrypt from "bcryptjs";
 
 export class AuthService implements IAuthService {
@@ -47,5 +48,19 @@ export class AuthService implements IAuthService {
     }
 
     return new UserAuthDataDto(); // Registracija nije uspela
+  }
+
+  async logout(userId: number): Promise<boolean> {
+    try {
+      const query = `
+        INSERT INTO audit_logs (user_id, action, details) 
+        VALUES (?, 'LOGOUT', 'Korisnik se uspesno odjavio.')
+      `;
+      await db.execute(query, [userId]);
+      return true;
+    } catch (error) {
+      console.error("Greska pri upisu u audit log:", error);
+      return false;
+    }
   }
 }

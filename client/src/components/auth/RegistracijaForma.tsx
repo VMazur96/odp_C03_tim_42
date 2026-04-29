@@ -73,7 +73,7 @@ export function RegistracijaForma({ authApi }: AuthFormProps) {
 
       if (odgovor.success) {
         setUspeh("Uspesna registracija! Sada mozete da se prijavite.");
-        setUsername(""); setEmail(""); setPassword(""); setFullName(""); setProfileImage(""); // Dodato resetovanje slike
+        setUsername(""); setEmail(""); setPassword(""); setFullName(""); setProfileImage(""); 
       } else {
         setGreska(odgovor.message || "Registracija nije uspela.");
       }

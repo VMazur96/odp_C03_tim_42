@@ -1,6 +1,8 @@
 import { Request, Response, Router } from 'express';
 import { IAuthService } from '../../Domain/services/auth/IAuthService';
 import jwt from "jsonwebtoken";
+import { authRegistracijaValidator } from '../../Middlewares/validation/ValidationMiddleware';
+import { authenticate } from '../../Middlewares/authentification/AuthMiddleware';
 
 export class AuthController {
   private router: Router;
@@ -10,6 +12,8 @@ export class AuthController {
     this.router = Router();
     this.authService = authService;
     this.initializeRoutes();
+    this.router.post('/register', authRegistracijaValidator, this.registracija.bind(this));
+    this.router.post('/logout', authenticate, this.logout.bind(this));
   }
 
   private initializeRoutes(): void {
@@ -62,36 +66,12 @@ export class AuthController {
    */
   private async registracija(req: Request, res: Response): Promise<void> {
     try {
-      const { username, email, password, full_name, profile_image } = req.body;
+      const { username, email, password, fullName, profileImage } = req.body;
       
       // TODO: Validator podataka za registraciju
       // const rezultat = authRegistracijaValidator(korisnickoIme, lozinka);
 
-      if (!username || username.length < 3 || username.length > 40) {
-        res.status(400).json({ success: false, message: 'Korisnicko ime nije validno (3-40 karaktera).' });
-        return;
-      }
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      
-      if (!email || !emailRegex.test(email)) {
-        res.status(400).json({ success: false, message: 'Email format nije validan.' });
-        return;
-      }
-      
-     const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-     
-      if (!password || !passwordRegex.test(password)) {
-        res.status(400).json({ success: false, message: 'Lozinka mora imati najmanje 8 karaktera, jedno veliko slovo i jedan broj.' });
-        return;
-      }
-      
-      if (!full_name) {
-        res.status(400).json({ success: false, message: 'Ime i prezime je obavezno.' });
-        return;
-      }
-
-      const result = await this.authService.registracija(username, email, password, full_name, profile_image);
+      const result = await this.authService.registracija(username, email, password, fullName, profileImage);
       
       // Proveravamo da li je registracija uspešna
       if (result.id !== 0) {
@@ -118,5 +98,23 @@ export class AuthController {
    */
   public getRouter(): Router {
     return this.router;
+  }
+
+  private async logout(req: Request, res: Response): Promise<void> {
+    try {
+      // authenticate middleware nam je ovo vec namestio!
+      const userId = req.user?.id; 
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Niste prijavljeni.' });
+        return;
+      }
+
+      // Upisujemo u audit_logs bazu
+      await this.authService.logout(userId);
+      res.status(200).json({ success: true, message: 'Uspešna odjava.' });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Greška pri odjavi.' });
+    }
   }
 }
