@@ -11,9 +11,30 @@ export function RegistracijaForma({ authApi }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+
+  const [profileImage, setProfileImage] = useState<string>(""); 
+  const [slikaGreska, setSlikaGreska] = useState("");
   
   const [greska, setGreska] = useState("");
   const [uspeh, setUspeh] = useState("");
+
+  // Funkcija koja cita fajl sa racunara i pretvara ga u Base64 string
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setSlikaGreska("");
+
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setSlikaGreska("Slika mora biti manja od 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file); 
+    }
+  };
 
   // 2. FUNKCIJA ZA SLANJE
   const podnesiFormu = async (e: React.FormEvent) => {
@@ -31,8 +52,9 @@ export function RegistracijaForma({ authApi }: AuthFormProps) {
       setGreska("Unesite validan email format.");
       return;
     }
-    if (password.length < 8) {
-      setGreska("Lozinka mora imati najmanje 8 karaktera.");
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setGreska("Lozinka mora imati najmanje 8 karaktera, jedno veliko slovo i jedan broj.");
       return;
     }
     if (!fullName) {
@@ -40,13 +62,18 @@ export function RegistracijaForma({ authApi }: AuthFormProps) {
       return;
     }
 
+    if (!profileImage) {
+      setGreska("Profilna slika je obavezna.");
+      return;
+    }
+
     try {
       // 3. API POZIV: Slanje podataka na backend
-      const odgovor = await authApi.registracija(username, email, password, fullName);
+      const odgovor = await authApi.registracija(username, email, password, fullName, profileImage);
 
       if (odgovor.success) {
         setUspeh("Uspesna registracija! Sada mozete da se prijavite.");
-        setUsername(""); setEmail(""); setPassword(""); setFullName("");
+        setUsername(""); setEmail(""); setPassword(""); setFullName(""); setProfileImage(""); // Dodato resetovanje slike
       } else {
         setGreska(odgovor.message || "Registracija nije uspela.");
       }
@@ -54,7 +81,7 @@ export function RegistracijaForma({ authApi }: AuthFormProps) {
       console.error("Serverska greska:", error);
       setGreska("Doslo je do greske prilikom povezivanja sa serverom.");
     }
-  };
+  }; 
 
   return (
     <form onSubmit={podnesiFormu} className="flex flex-col gap-4">
@@ -100,6 +127,21 @@ export function RegistracijaForma({ authApi }: AuthFormProps) {
           onChange={(e) => setPassword(e.target.value)} 
           className="border border-gray-300 p-2 rounded focus:outline-blue-500"
         />
+      </div>
+
+      <div className="flex flex-col">
+        <label className="font-medium text-gray-700">Profilna slika (do 2MB):</label>
+        <input 
+          type="file" 
+          accept="image/*"
+          onChange={handleImageUpload} 
+          className="border border-gray-300 p-2 rounded focus:outline-blue-500 bg-white"
+        />
+        {slikaGreska && <p className="text-red-500 text-xs mt-1">{slikaGreska}</p>}
+        {/* Prikaz male slike kada je korisnik izabere */}
+        {profileImage && (
+          <img src={profileImage} alt="Pregled profila" className="w-16 h-16 object-cover rounded-full mt-2 border border-gray-300" />
+        )}
       </div>
 
       <button type="submit" className="bg-green-600 text-white font-bold py-2 rounded hover:bg-green-700 transition mt-2">

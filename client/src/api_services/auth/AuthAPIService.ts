@@ -29,18 +29,20 @@ export const authApi: IAuthAPIService = {
     username: string,
     email: string,
     password: string,
-    fullName: string
+    fullName: string,
+    profileImage: string
   ): Promise<AuthResponse> {
     try {
       const res = await axios.post<AuthResponse>(`${API_URL}/register`, {
         username,
         email,
         password,
-        full_name: fullName
+        full_name: fullName,
+        profile_image: profileImage
       });
       return res.data;
     } catch (error) {
-      let message = "Greška prilikom registracije.";
+      let message = "Greska prilikom registracije.";
       if (axios.isAxiosError(error)) {
         message = error.response?.data?.message || message;
       }

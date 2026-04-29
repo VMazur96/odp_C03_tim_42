@@ -25,21 +25,21 @@ export class AuthService implements IAuthService {
     const existingUser = await this.userRepository.getByUsername(username);
     
     if (existingUser.id !== 0) {
-      return new UserAuthDataDto(); // Korisnik već postoji
+      return new UserAuthDataDto(); // Korisnik vec postoji
     }
 
     // Proveravamo da li je email vec zauzet
     const existingEmail = await this.userRepository.getByEmail(email);
 
     if (existingEmail.id !== 0){ 
-      return new UserAuthDataDto(); // Korisnik već postoji
+      return new UserAuthDataDto(); // Korisnik vec postoji
     }
     
-    // Hash-ujemo lozinku pre čuvanja
+    // Hash-ujemo lozinku pre cuvanja
     const hashedPassword = await bcrypt.hash(lozinka, this.saltRounds);
 
     const newUser = await this.userRepository.create(
-      new User(0, username, email, hashedPassword, fullName, profileImage || null, 'player')
+      new User(0, username, email, hashedPassword, fullName, profileImage, 'player')
     );
 
     if (newUser.id !== 0) {

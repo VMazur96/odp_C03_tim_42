@@ -68,7 +68,7 @@ export class AuthController {
       // const rezultat = authRegistracijaValidator(korisnickoIme, lozinka);
 
       if (!username || username.length < 3 || username.length > 40) {
-        res.status(400).json({ success: false, message: 'Korisničko ime nije validno (3-40 karaktera).' });
+        res.status(400).json({ success: false, message: 'Korisnicko ime nije validno (3-40 karaktera).' });
         return;
       }
 
@@ -79,8 +79,10 @@ export class AuthController {
         return;
       }
       
-      if (!password || password.length < 8) {
-        res.status(400).json({ success: false, message: 'Lozinka mora imati najmanje 8 karaktera.' });
+     const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+     
+      if (!password || !passwordRegex.test(password)) {
+        res.status(400).json({ success: false, message: 'Lozinka mora imati najmanje 8 karaktera, jedno veliko slovo i jedan broj.' });
         return;
       }
       
@@ -102,9 +104,9 @@ export class AuthController {
           }, process.env.JWT_SECRET ?? "", { expiresIn: '6h' });
 
 
-        res.status(201).json({success: true, message: 'Uspešna registracija', data: token});
+        res.status(201).json({success: true, message: 'Uspesna registracija', data: token});
       } else {
-        res.status(401).json({success: false, message: 'Регистрација није успела. Корисничко име већ постоји.', });
+        res.status(401).json({success: false, message: 'Registracija nije uspela. Korisnicko ime vec postoji.', });
       }
     } catch (error) {
       res.status(500).json({success: false, message: error});
