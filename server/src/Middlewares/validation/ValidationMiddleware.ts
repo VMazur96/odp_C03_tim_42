@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 export const authRegistracijaValidator = (req: Request, res: Response, next: NextFunction): void => {
-  const { username, email, password, full_name } = req.body;
+  const { username, email, password, fullName } = req.body;
 
   if (!username || username.length < 3 || username.length > 40) {
     res.status(400).json({ success: false, message: 'Korisničko ime nije validno (3-40 karaktera).' });
@@ -20,7 +20,7 @@ export const authRegistracijaValidator = (req: Request, res: Response, next: Nex
     return;
   }
 
-  if (!full_name) {
+  if (!fullName) {
     res.status(400).json({ success: false, message: 'Ime i prezime je obavezno.' });
     return;
   }

@@ -37,8 +37,8 @@ export const authApi: IAuthAPIService = {
         username,
         email,
         password,
-        full_name: fullName,
-        profile_image: profileImage
+        fullName: fullName,
+        profileImage: profileImage
       });
       return res.data;
     } catch (error) {

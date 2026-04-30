@@ -14,13 +14,19 @@ export default function PlayerDashboard() {
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl p-8">
         <div className="flex items-center space-x-6 border-b pb-6 mb-6">
+          
           {/* PRIKAZ PROFILNE SLIKE */}
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg bg-gray-200">
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg bg-gray-200 flex-shrink-0">
+            {/* Proveravamo profile_picture jer taj naziv šalje JWT token */}
             {user?.profile_picture ? (
               <img 
                 src={user.profile_picture} 
                 alt="Profilna slika" 
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Ako Base64 string nije validan, prikazujemo prvo slovo imena
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-4xl text-gray-500 font-bold uppercase">

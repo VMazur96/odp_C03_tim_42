@@ -18,7 +18,8 @@ const decodeJWT = (token: string): JwtTokenClaims | null => {
             return {
                 id: decoded.id,
                 username: decoded.username,
-                role: decoded.role
+                role: decoded.role,
+                profile_picture: decoded.profile_picture
             };
         }
         
