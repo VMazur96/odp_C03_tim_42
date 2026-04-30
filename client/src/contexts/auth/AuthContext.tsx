@@ -83,7 +83,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUser({
                 id: claims.id,
                 username: claims.username,
-                role: claims.role
+                role: claims.role,
+                profile_picture: claims.profile_picture || ""
             });
             SačuvajVrednostPoKljuču("authToken", newToken);
         } else {

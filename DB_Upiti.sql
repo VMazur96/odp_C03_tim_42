@@ -1,7 +1,3 @@
--- Kreira bazu i prelazi na nju
-CREATE DATABASE IF NOT EXISTS forgeboard_db;
-USE forgeboard_db;
-
 -- 1. Tabela Korisnici (Users) sa validacijom duzine username-a
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -50,8 +46,8 @@ CREATE TABLE user_games (
     user_id INT NOT NULL,
     game_id INT NOT NULL,
     status ENUM('owned', 'wishlist', 'previously_owned') NOT NULL,
-    personal_rating TINYINT CHECK (personal_rating IS NULL OR (personal_rating >= 1 AND personal_rating <= 10)),
-    notes TEXT,
+    rating TINYINT CHECK (rating IS NULL OR (rating >= 1 AND rating <= 10)), -- ISPRAVLJENO: Sada se zove samo 'rating' da se složi sa backendom
+    note TEXT, -- ISPRAVLJENO: Sada se zove 'note' umesto 'notes'
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, game_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -90,7 +86,7 @@ CREATE TABLE reviews (
     body TEXT NOT NULL,
     rating TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 10),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (game_id, user_id), -- Sprečava da korisnik ostavi više recenzija za istu igru
+    UNIQUE (game_id, user_id),
     FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CHECK (LENGTH(body) >= 50 AND LENGTH(body) <= 3000)
@@ -106,7 +102,7 @@ CREATE TABLE audit_logs (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Dodavanje Indexa za optimizaciju pretrage i filtriranja kataloga igara
+
 CREATE INDEX idx_games_players ON games(min_players, max_players);
 CREATE INDEX idx_games_duration ON games(duration_min);
 CREATE INDEX idx_games_weight ON games(weight);

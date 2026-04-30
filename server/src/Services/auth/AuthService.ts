@@ -15,7 +15,7 @@ export class AuthService implements IAuthService {
 
     // Proveravamo da li korisnik postoji i da li se lozinka poklapa sa hash-om iz baze
     if (user.id !== 0 && await bcrypt.compare(lozinka, user.password_hash)) {
-      return new UserAuthDataDto(user.id, user.username, user.role);
+      return new UserAuthDataDto(user.id, user.username, user.role, user.profile_image);
     }
 
     return new UserAuthDataDto(); // Neispravno korisničko ime ili lozinka
@@ -44,7 +44,7 @@ export class AuthService implements IAuthService {
     );
 
     if (newUser.id !== 0) {
-      return new UserAuthDataDto(newUser.id, newUser.username, newUser.role);
+      return new UserAuthDataDto(newUser.id, newUser.username, newUser.role, newUser.profile_image);
     }
 
     return new UserAuthDataDto(); // Registracija nije uspela

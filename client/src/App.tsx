@@ -3,71 +3,86 @@ import {
   Route,
   Navigate,
   Link,
-  useLocation
+  useLocation,
+  useNavigate
 } from "react-router-dom";
+import { useContext } from "react";
+import AuthContext from "./contexts/auth/AuthContext";
 import { authApi } from "./api_services/auth/AuthAPIService";
-// import { ProtectedRoute } from "./components/protected_route/ProtectedRoute";
+
 import PrijavaStranica from "./pages/auth/PrijavaStranica";
 import RegistracijaStranica from "./pages/auth/RegistracijaStranica";
 import NotFoundStranica from "./pages/not_found/NotFoundPage";
-// import { usersApi } from "./api_services/users/UsersAPIService";
-
-// Nasi novi importi
 import KatalogStranica from "./pages/games/KatalogStranica";
+import PlayerDashboard from "./pages/dashboard/PlayerDashboard";
 import { PročitajVrednostPoKljuču } from "./helpers/local_storage";
 import "./index.css";
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const authContext = useContext(AuthContext);
   
-  // Citamo token direktno. 
-  // Posto useLocation() osvezava App pri svakoj promeni URL-a, 
-  // ovo ce uvek biti tacno bez ikakvog kasnjenja!
-  const prijavljen = !!PročitajVrednostPoKljuču("authToken");
+  const prijavljen = authContext?.isAuthenticated || !!PročitajVrednostPoKljuču("authToken");
+
+  const handleLogout = async () => {
+    if (authContext) {
+      await authContext.logout();
+      navigate("/login");
+    }
+  };
 
   return (
     <div>
-      {/* Navigacioni meni koji je uvek vidljiv na vrhu ekrana */}
-      <nav className="nav-bar">
+      <nav className="nav-bar flex justify-center items-center gap-4 p-4 bg-gray-800 text-white">
         <Link 
           to="/katalog" 
-          className={`nav-btn ${location.pathname === '/katalog' ? 'active' : ''}`}
+          className={`nav-btn px-4 py-2 rounded ${location.pathname === '/katalog' ? 'bg-gray-600' : 'hover:bg-gray-700'}`}
         >
           Katalog Igara
         </Link>
-        <Link 
-          to={prijavljen ? "/user-dashboard" : "/login"} 
-          className={`nav-btn ${location.pathname === '/login' || location.pathname === '/user-dashboard' ? 'active' : ''}`}
-        >
-          {prijavljen ? "Moj Profil" : "Prijava"}
-        </Link>
+
+        {!prijavljen ? (
+          <Link 
+            to="/login" 
+            className={`nav-btn px-4 py-2 rounded ${location.pathname === '/login' ? 'bg-gray-600' : 'hover:bg-gray-700'}`}
+          >
+            Prijava
+          </Link>
+        ) : (
+          <>
+            {/* DINAMICKI LINK: Vodi na player ili admin dashboard zavisno od role */}
+            <Link 
+              to={`/${authContext?.user?.role || 'player'}-dashboard`} 
+              className={`nav-btn px-4 py-2 rounded ${location.pathname.includes('dashboard') ? 'bg-gray-600' : 'hover:bg-gray-700'}`}
+            >
+              Moj Profil
+            </Link>
+            <button 
+              onClick={handleLogout}
+              className="nav-btn bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-bold transition"
+            >
+              Odjavi se
+            </button>
+          </>
+        )}
       </nav>
 
-      {/* Ruter koji menja komponente ispod menija u zavisnosti od URL-a */}
       <Routes>
-        {/* Nasa nova javna ruta za katalog */}
-        <Route path="/katalog" element={<KatalogStranica />} />
-
-        {/* Asistentove rute za autentifikaciju */}
-        <Route path="/login" element={<PrijavaStranica authApi={authApi} />} />
-        <Route path="/register" element={<RegistracijaStranica authApi={authApi} />} />
-        <Route path="/404" element={<NotFoundStranica />} />
-
-        {/*
-          Example usage of protected route.
-        <Route
-          path="/user-dashboard"
-          element={
-            <ProtectedRoute requiredRole="user">
-              <KontrolnaTablaUserStranica />
-            </ProtectedRoute>
-          }
-        /> */}
-
-        {/* Preusmerava na katalog kao default rutu */}
+        {/* 1. POCETNA RUTA - Odmah preusmerava na katalog */}
         <Route path="/" element={<Navigate to="/katalog" replace />} />
 
-        {/* Catch-all ruta za nepostojece stranice */}
+        {/* 2. JAVNE RUTE */}
+        <Route path="/katalog" element={<KatalogStranica />} />
+        <Route path="/login" element={<PrijavaStranica authApi={authApi} />} />
+        <Route path="/register" element={<RegistracijaStranica authApi={authApi} />} />
+
+        {/* 3. PROTECTED RUTE (Dashboard-ovi) */}
+        <Route path="/player-dashboard" element={<PlayerDashboard />} />
+        <Route path="/admin-dashboard" element={<div className="p-10 text-center text-2xl font-bold">Admin Panel (U izradi)</div>} />
+
+        {/* 4. GRESKE */}
+        <Route path="/404" element={<NotFoundStranica />} />
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
     </div>
