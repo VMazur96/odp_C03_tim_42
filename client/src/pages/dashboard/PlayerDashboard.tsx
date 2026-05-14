@@ -16,7 +16,7 @@ export default function PlayerDashboard() {
         <div className="flex items-center space-x-6 border-b pb-6 mb-6">
           
           {/* PRIKAZ PROFILNE SLIKE */}
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg bg-gray-200 flex-shrink-0">
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg bg-gray-200 shrink-0">
             {/* Proveravamo profile_picture jer taj naziv šalje JWT token */}
             {user?.profile_picture ? (
               <img 

@@ -1,3 +1,8 @@
+-- Kreiranje baze
+CREATE DATABASE forgeboard_db;
+
+USE forgeboard_db;
+
 -- 1. Tabela Korisnici (Users) sa validacijom duzine username-a
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -5,7 +10,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
-    profile_image TEXT,
+    profile_image LONGTEXT,
     role ENUM('guest', 'player', 'admin') DEFAULT 'player',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CHECK (LENGTH(username) >= 3 AND LENGTH(username) <= 40)

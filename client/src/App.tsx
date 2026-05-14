@@ -16,6 +16,7 @@ import NotFoundStranica from "./pages/not_found/NotFoundPage";
 import KatalogStranica from "./pages/games/KatalogStranica";
 import PlayerDashboard from "./pages/dashboard/PlayerDashboard";
 import { PročitajVrednostPoKljuču } from "./helpers/local_storage";
+import DetaljiIgreStranica from './pages/games/DetaljiIgreStranica';
 import "./index.css";
 
 function App() {
@@ -76,6 +77,7 @@ function App() {
         <Route path="/katalog" element={<KatalogStranica />} />
         <Route path="/login" element={<PrijavaStranica authApi={authApi} />} />
         <Route path="/register" element={<RegistracijaStranica authApi={authApi} />} />
+        <Route path="/igre/:id" element={<DetaljiIgreStranica />} />
 
         {/* 3. PROTECTED RUTE (Dashboard-ovi) */}
         <Route path="/player-dashboard" element={<PlayerDashboard />} />

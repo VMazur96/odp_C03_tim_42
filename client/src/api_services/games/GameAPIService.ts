@@ -19,5 +19,19 @@ export const gameApi: IGameAPIService = {
       console.error("Greska pri pronalazenju kataloga igara:", error);
       return [];
     }
+  },
+
+  async getGameById(id: number): Promise<GameDto | null> {
+    try {
+      const res = await axios.get<{success: boolean, data: GameDto}>(`${API_URL}/${id}`);
+      
+      if (res.data.success) {
+        return res.data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error(`Greska pri dohvatanju igre sa ID ${id}:`, error);
+      return null;
+    }
   }
 };
