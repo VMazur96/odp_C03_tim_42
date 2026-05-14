@@ -29,8 +29,6 @@ export class AuthController {
     try {
       const { username, password } = req.body;
 
-      // TODO: Provera da li su polja poslata
-
       if (!username || !password) {
         res.status(400).json({ success: false, message: 'Korisničko ime i lozinka su obavezni.' });
         return;
@@ -38,21 +36,19 @@ export class AuthController {
 
       const result = await this.authService.prijava(username, password);
 
-      // Provera da li je prijava uspesna
       if (result.id !== 0) {
-        // Kreiranje jwt tokena
+        // Kreiranje jwt tokena BEZ SLIKE da ne bi pucao Error 431
         const token = jwt.sign(
           { 
             id: result.id, 
             username: result.username, 
-            role: result.role,
-            profile_picture: result.profile_image,
+            role: result.role
           }, process.env.JWT_SECRET ?? "", { expiresIn: '6h' });
 
         res.status(200).json({success: true, message: 'Uspešna prijava', data: token});
         return;
       } else {
-        res.status(401).json({success: false, message: 'Неисправно корисничко име или лозинка'});
+        res.status(401).json({success: false, message: 'Neispravno korisničko ime ili lozinka'});
         return;
       }
     } catch (error) {
@@ -68,23 +64,17 @@ export class AuthController {
   private async registracija(req: Request, res: Response): Promise<void> {
     try {
       const { username, email, password, fullName, profileImage } = req.body;
-      
-      // TODO: Validator podataka za registraciju
-      // const rezultat = authRegistracijaValidator(korisnickoIme, lozinka);
 
       const result = await this.authService.registracija(username, email, password, fullName, profileImage);
       
-      // Proveravamo da li je registracija uspešna
       if (result.id !== 0) {
-        // Kreiranje jwt tokena
+        // Kreiranje jwt tokena BEZ SLIKE da ne bi pucao Error 431
         const token = jwt.sign(
           { 
             id: result.id, 
             username: result.username, 
-            role: result.role,
-            profile_picture: result.profile_image,
+            role: result.role
           }, process.env.JWT_SECRET ?? "", { expiresIn: '6h' });
-
 
         res.status(201).json({success: true, message: 'Uspesna registracija', data: token});
       } else {
@@ -95,16 +85,12 @@ export class AuthController {
     }
   }
 
-  /**
-   * Getter za router
-   */
   public getRouter(): Router {
     return this.router;
   }
 
   private async logout(req: Request, res: Response): Promise<void> {
     try {
-      // authenticate middleware nam je ovo vec namestio!
       const userId = req.user?.id; 
 
       if (!userId) {
@@ -112,7 +98,6 @@ export class AuthController {
         return;
       }
 
-      // Upisujemo u audit_logs bazu
       await this.authService.logout(userId);
       res.status(200).json({ success: true, message: 'Uspešna odjava.' });
     } catch (error) {

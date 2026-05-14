@@ -53,12 +53,26 @@ export default function DetaljiIgreStranica() {
             <p className="text-gray-700 text-lg leading-relaxed mb-6">
               {igra.description}
             </p>
+
+            {/* PRIKAZ MEHANIKA */}
+            {igra.mechanics && igra.mechanics.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Mehanike:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {igra.mechanics.map((mehanika, index) => (
+                    <span key={index} className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold shadow-sm border border-purple-200">
+                      {mehanika}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             
             <div className="grid grid-cols-2 gap-4 text-gray-700 bg-gray-50 p-4 rounded-lg">
               <div><strong className="text-gray-900">Broj igrača:</strong> {igra.min_players} - {igra.max_players}</div>
               <div><strong className="text-gray-900">Trajanje:</strong> {igra.duration_min} min</div>
               <div><strong className="text-gray-900">Težina (1-5):</strong> {igra.weight} / 5</div>
-              <div><strong className="text-gray-900">Prosečna ocena:</strong> Još nema ocena</div>
+              <div><strong className="text-gray-900">Prosečna ocena:</strong> {igra.average_rating ? `${igra.average_rating}/10` : 'Još nema ocena'}</div>
             </div>
           </div>
         </div>

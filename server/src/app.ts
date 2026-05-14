@@ -17,8 +17,6 @@ import { UserGameRepository } from './Database/repositories/user_games/UserGameR
 import { UserGameService } from './Services/user_games/UserGameService';
 import { UserGameController } from './WebAPI/controllers/UserGameController';
 
-
-
 require('dotenv').config();
 
 const app = express();
@@ -44,7 +42,7 @@ const userController = new UserController(userService);
 const gameController = new GameController(gameService);
 const userGameController = new UserGameController(userGameService);
 
-// Registering routes
+// Registering routes (Vraćeno na tvoj originalni dizajn)
 app.use('/api/v1', authController.getRouter());
 app.use('/api/v1', userController.getRouter());
 app.use('/api/v1', gameController.getRouter());

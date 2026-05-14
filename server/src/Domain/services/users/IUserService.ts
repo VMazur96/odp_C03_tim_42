@@ -6,4 +6,5 @@ export interface IUserService {
      * @returns Podatke o korisnicima u vidu liste.
      */
   getSviKorisnici(): Promise<UserDto[]>;
+  getTrenutniKorisnik(id: number): Promise<UserDto | null>;
 }

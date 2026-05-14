@@ -51,8 +51,8 @@ CREATE TABLE user_games (
     user_id INT NOT NULL,
     game_id INT NOT NULL,
     status ENUM('owned', 'wishlist', 'previously_owned') NOT NULL,
-    rating TINYINT CHECK (rating IS NULL OR (rating >= 1 AND rating <= 10)), -- ISPRAVLJENO: Sada se zove samo 'rating' da se složi sa backendom
-    note TEXT, -- ISPRAVLJENO: Sada se zove 'note' umesto 'notes'
+    rating TINYINT CHECK (rating IS NULL OR (rating >= 1 AND rating <= 10)), 
+    note TEXT, 
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, game_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

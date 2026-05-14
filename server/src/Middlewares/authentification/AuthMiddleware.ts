@@ -21,6 +21,8 @@ export const authenticate = (
   next: NextFunction
 ): void => {
   const authHeader = req.headers.authorization;
+  
+  console.log("1. MIDDLEWARE: Stigao zahtev! Token postoji:", !!authHeader);
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res.status(401).json({ success: false, message: "Nedostaje token" });
@@ -35,9 +37,10 @@ export const authenticate = (
       process.env.JWT_SECRET ?? ""
     ) as JwtPayload;
 
-    req.user = decoded; // postavlja korisnika na req
+    req.user = decoded;
     next();
   } catch (err) {
+    console.log("1. MIDDLEWARE GREŠKA: Token je istekao ili je nevažeći!");
     res.status(401).json({ success: false, message: "Nevažeći token" });
   }
 };

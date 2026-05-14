@@ -30,18 +30,35 @@ export class GameRepository implements IGameRepository {
     }
   }
 
-  // Pronalazenje igre po ID-u
+  // Pronalazenje igre po ID-u (SADA RACUNA PROSEK I VUCE MEHANIKE)
   async getById(id: number): Promise<Game | null> {
     try {
-      const query = 'SELECT * FROM games WHERE id = ?';
+      const query = `
+        SELECT g.*, 
+               (SELECT AVG(rating) FROM user_games WHERE game_id = g.id AND rating IS NOT NULL) as average_rating,
+               (SELECT GROUP_CONCAT(m.name SEPARATOR ',') FROM mechanics m JOIN game_mechanics gm ON m.id = gm.mechanic_id WHERE gm.game_id = g.id) as mechanics_list
+        FROM games g 
+        WHERE g.id = ?
+      `;
       const [rows] = await db.execute<RowDataPacket[]>(query, [id]);
 
       if (rows.length > 0) {
         const r = rows[0];
-        return new Game(
-          r.id, r.name, r.description, r.min_players, r.max_players,
-          r.duration_min, r.weight, r.release_year, r.publisher, r.cover_image
-        );
+        // Ne koristimo strogo "new Game()" da bismo mogli da pošaljemo i nova polja
+        return {
+          id: r.id,
+          name: r.name,
+          description: r.description,
+          min_players: r.min_players,
+          max_players: r.max_players,
+          duration_min: r.duration_min,
+          weight: r.weight,
+          release_year: r.release_year,
+          publisher: r.publisher,
+          cover_image: r.cover_image,
+          average_rating: r.average_rating ? parseFloat(Number(r.average_rating).toFixed(1)) : null,
+          mechanics: r.mechanics_list ? r.mechanics_list.split(',') : []
+        } as any;
       }
       return null;
     } catch (error) {
@@ -50,16 +67,32 @@ export class GameRepository implements IGameRepository {
     }
   }
 
-  // Pronalazenje svih igara (za katalog)
+  // Pronalazenje svih igara za katalog (SADA RACUNA PROSEK I VUCE MEHANIKE)
   async getAll(): Promise<Game[]> {
     try {
-      const query = 'SELECT * FROM games ORDER BY name ASC';
+      const query = `
+        SELECT g.*, 
+               (SELECT AVG(rating) FROM user_games WHERE game_id = g.id AND rating IS NOT NULL) as average_rating,
+               (SELECT GROUP_CONCAT(m.name SEPARATOR ',') FROM mechanics m JOIN game_mechanics gm ON m.id = gm.mechanic_id WHERE gm.game_id = g.id) as mechanics_list
+        FROM games g 
+        ORDER BY g.name ASC
+      `;
       const [rows] = await db.execute<RowDataPacket[]>(query);
 
-      return rows.map(r => new Game(
-        r.id, r.name, r.description, r.min_players, r.max_players,
-        r.duration_min, r.weight, r.release_year, r.publisher, r.cover_image
-      ));
+      return rows.map(r => ({
+        id: r.id,
+        name: r.name,
+        description: r.description,
+        min_players: r.min_players,
+        max_players: r.max_players,
+        duration_min: r.duration_min,
+        weight: r.weight,
+        release_year: r.release_year,
+        publisher: r.publisher,
+        cover_image: r.cover_image,
+        average_rating: r.average_rating ? parseFloat(Number(r.average_rating).toFixed(1)) : null,
+        mechanics: r.mechanics_list ? r.mechanics_list.split(',') : []
+      } as any));
     } catch (error) {
       console.error("Greska pri pronalazenju svih igara:", error);
       return [];

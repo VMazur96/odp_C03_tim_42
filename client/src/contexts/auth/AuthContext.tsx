@@ -5,21 +5,20 @@ import type { AuthUser } from '../../types/auth/AuthUser';
 import { ObrišiVrednostPoKljuču, PročitajVrednostPoKljuču, SačuvajVrednostPoKljuču } from '../../helpers/local_storage';
 import type { JwtTokenClaims } from '../../types/auth/JwtTokenClaims';
 import axios from "axios";
+import { usersApi } from '../../api_services/users/UsersAPIService';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper funkcija za dekodiranje JWT tokena
 const decodeJWT = (token: string): JwtTokenClaims | null => {
     try {
         const decoded = jwtDecode<JwtTokenClaims>(token);
         
-        // Proveri da li token ima potrebna polja
         if (decoded.id && decoded.username && decoded.role) {
             return {
                 id: decoded.id,
                 username: decoded.username,
                 role: decoded.role,
-                profile_picture: decoded.profile_picture
+                // Ne povlačimo više sliku odavde jer je nema u tokenu
             };
         }
         
@@ -30,7 +29,6 @@ const decodeJWT = (token: string): JwtTokenClaims | null => {
     }
 };
 
-// Helper funkcija za proveru da li je token istekao
 const isTokenExpired = (token: string): boolean => {
     try {
         const decoded = jwtDecode(token);
@@ -47,69 +45,97 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Učitaj token iz localStorage pri pokretanju
     useEffect(() => {
-        const savedToken = PročitajVrednostPoKljuču("authToken");
-        
-        if (savedToken) {
-            // Proveri da li je token istekao
-            if (isTokenExpired(savedToken)) {
-                ObrišiVrednostPoKljuču("authToken");
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                setIsLoading(false);
-                return;
+        const initAuth = async () => {
+            const savedToken = PročitajVrednostPoKljuču("authToken");
+            
+            if (savedToken) {
+                if (isTokenExpired(savedToken)) {
+                    ObrišiVrednostPoKljuču("authToken");
+                    setIsLoading(false);
+                    return;
+                }
+                
+                const claims = decodeJWT(savedToken);
+                if (claims) {
+                    setToken(savedToken);
+                    
+                    // Odmah postavljamo osnovne podatke iz tokena
+                    setUser({
+                        id: claims.id,
+                        username: claims.username,
+                        role: claims.role
+                    });
+
+                    // Naknadno dohvatamo sliku sa servera
+                    try {
+                        const fullUser = await usersApi.getMe(savedToken);
+                        if (fullUser) {
+                            setUser({
+                                id: fullUser.id,
+                                username: fullUser.korisnickoIme,
+                                role: fullUser.uloga,
+                                profile_picture: fullUser.profile_image || "" 
+                            });
+                        }
+                    } catch (err) {
+                        console.error("Problem sa učitavanjem profila:", err);
+                    }
+                } else {
+                    ObrišiVrednostPoKljuču("authToken");
+                }
             }
             
-            const claims = decodeJWT(savedToken);
-            if (claims) {
-                setToken(savedToken);
-                setUser({
-                    id: claims.id,
-                    username: claims.username,
-                    role: claims.role
-                });
-            } else {
-                ObrišiVrednostPoKljuču("authToken");
-            }
-        }
-        
-        setIsLoading(false);
+            setIsLoading(false);
+        };
+
+        initAuth();
     }, []);
 
-    const login = (newToken: string) => {
+    const login = async (newToken: string) => {
         const claims = decodeJWT(newToken);
         
         if (claims && !isTokenExpired(newToken)) {
             setToken(newToken);
+            SačuvajVrednostPoKljuču("authToken", newToken);
+            
             setUser({
                 id: claims.id,
                 username: claims.username,
                 role: claims.role,
-                profile_picture: claims.profile_picture || ""
             });
-            SačuvajVrednostPoKljuču("authToken", newToken);
+
+            // Čim se uloguje, povuci sliku
+            const fullUser = await usersApi.getMe(newToken);
+            if (fullUser) {
+                setUser({
+                    id: fullUser.id,
+                    username: fullUser.korisnickoIme,
+                    role: fullUser.uloga,
+                    profile_picture: fullUser.profile_image || ""
+                });
+            }
         } else {
             console.error('Nevažeći ili istekao token');
         }
     };
 
     const logout = async () => {
-        
-    try {
-        const currentToken = PročitajVrednostPoKljuču("authToken");
-            
-        if (currentToken) {
-            await axios.post(`${import.meta.env.VITE_API_URL}auth/logout`, {}, {
-                headers: { Authorization: `Bearer ${currentToken}` }
-            });
+        try {
+            const currentToken = PročitajVrednostPoKljuču("authToken");
+                
+            if (currentToken) {
+                await axios.post(`${import.meta.env.VITE_API_URL}auth/logout`, {}, {
+                    headers: { Authorization: `Bearer ${currentToken}` }
+                });
+            }
+        } catch (error) {
+            console.error("Greška pri odjavi na serveru", error);
         }
-    } catch (error) {
-        console.error("Greska pri odjavi na serveru", error);
-    }
 
-    setToken(null);
-    setUser(null);
-    ObrišiVrednostPoKljuču("authToken");
+        setToken(null);
+        setUser(null);
+        ObrišiVrednostPoKljuču("authToken");
     };
 
     const isAuthenticated = !!user && !!token;

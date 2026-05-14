@@ -18,17 +18,22 @@ export class UserGameController {
 
   private initializeRoutes() {
     this.router.get('/ping', (req: Request, res: Response) => {
-        res.status(200).json({ poruka: "Bravo! Kontroler je ziv i povezan!" });
+        res.status(200).json({ poruka: "Kontroler je ziv i povezan!" });
     });
 
     this.router.post('/', authenticate, this.dodajIgru.bind(this));
     this.router.get('/', authenticate, this.dohvatiKolekciju.bind(this));
+
+    this.router.put('/:gameId', authenticate, this.izmeniIgru.bind(this));
+    this.router.delete('/:gameId', authenticate, this.obrisiIgru.bind(this));
   }
 
   private async dodajIgru(req: Request, res: Response): Promise<void> {
     try {
-      const userId = req.user?.id; // ID se automatski cita iz tokena
-      const { gameId, status, rating } = req.body;
+      console.log("2. KONTROLER: Ušao u dodajIgru. Body je:", req.body);
+      
+      const userId = req.user?.id; 
+      const { gameId, status, rating, note } = req.body;
 
       if (!userId) {
         res.status(401).json({ success: false, message: 'Niste prijavljeni.' });
@@ -40,10 +45,11 @@ export class UserGameController {
         return;
       }
 
-      const uspesno = await this.userGameService.dodajIgru(userId, gameId, status, rating || null);
+      const uspesno = await this.userGameService.dodajIgru(userId, gameId, status, rating || null, note || null);
       
       if (uspesno) {
-        res.status(200).json({ success: true, message: 'Igra uspesno dodata/azurirana u kolekciji.' });
+        console.log("3. KONTROLER: Uspešno upisano u bazu!");
+        res.status(200).json({ success: true, message: 'Igra uspesno dodata u kolekciju.' });
       } else {
         res.status(400).json({ success: false, message: 'Nije moguce dodati igru u kolekciju.' });
       }
@@ -56,16 +62,55 @@ export class UserGameController {
   private async dohvatiKolekciju(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Niste prijavljeni.' });
+        return;
+      }
+      const kolekcija = await this.userGameService.dohvatiKolekciju(userId);
+      res.status(200).json({ success: true, data: kolekcija });
+    } catch (error) {
+      console.error("Greska u kontroleru pri dohvatanju kolekcije:", error);
+      res.status(500).json({ success: false, message: 'Serverska greska.' });
+    }
+  }
+
+  // Izmena igre u kolekciji
+private async izmeniIgru(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const gameId = parseInt(req.params.gameId as string, 10);
+      const { status, rating, note } = req.body;
 
       if (!userId) {
         res.status(401).json({ success: false, message: 'Niste prijavljeni.' });
         return;
       }
 
-      const kolekcija = await this.userGameService.dohvatiKolekciju(userId);
-      res.status(200).json({ success: true, data: kolekcija });
+      const uspesno = await this.userGameService.izmeniIgru(userId, gameId, status, rating || null, note || null);
+      if (uspesno) res.status(200).json({ success: true, message: 'Igra izmenjena.' });
+      else res.status(400).json({ success: false, message: 'Greška pri izmeni.' });
+
     } catch (error) {
-      console.error("Greska u kontroleru pri dohvatanju kolekcije:", error);
+      res.status(500).json({ success: false, message: 'Serverska greska.' });
+    }
+  }
+
+  // Brisanje igre iz kolekcije
+  private async obrisiIgru(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const gameId = parseInt(req.params.gameId as string, 10);
+
+      if (!userId) {
+        res.status(401).json({ success: false, message: 'Niste prijavljeni.' });
+        return;
+      }
+
+      const uspesno = await this.userGameService.obrisiIgru(userId, gameId);
+      if (uspesno) res.status(200).json({ success: true, message: 'Igra obrisana.' });
+      else res.status(400).json({ success: false, message: 'Greška pri brisanju.' });
+
+    } catch (error) {
       res.status(500).json({ success: false, message: 'Serverska greska.' });
     }
   }

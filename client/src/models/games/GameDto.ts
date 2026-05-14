@@ -9,4 +9,6 @@ export interface GameDto {
   release_year: number;
   publisher: string;
   cover_image: string;
+  mechanics?: string[]; 
+  average_rating?: number;
 }

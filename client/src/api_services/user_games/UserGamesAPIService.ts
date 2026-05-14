@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL + "user-games";
 
 export const userGamesApi: IUserGamesAPIService = {
   
-  async dodajUKolekciju(gameId: number, status: string, rating: number | null = null): Promise<boolean> {
+  async dodajUKolekciju(gameId: number, status: string, rating: number | null = null, note: string | null = null): Promise<boolean> {
     try {
       const token = PročitajVrednostPoKljuču("authToken");
       if (!token) {
@@ -16,7 +16,7 @@ export const userGamesApi: IUserGamesAPIService = {
       }
 
       const res = await axios.post(API_URL, 
-        { gameId, status, rating }, 
+        { gameId, status, rating, note }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -51,6 +51,33 @@ export const userGamesApi: IUserGamesAPIService = {
         console.error("Nepoznata greška pri dohvatanju kolekcije", error);
       }
       return [];
+    }
+  },
+
+  async izmeniIgru(gameId: number, status: string, rating: number | null, note: string | null): Promise<boolean> {
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.put(`${API_URL}/${gameId}`, 
+        { status, rating, note }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return true;
+    } catch (error) {
+      console.error("Greška pri izmeni:", error);
+      return false;
+    }
+  },
+
+  async obrisiIgru(gameId: number): Promise<boolean> {
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.delete(`${API_URL}/${gameId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return true;
+    } catch (error) {
+      console.error("Greška pri brisanju:", error);
+      return false;
     }
   }
 };

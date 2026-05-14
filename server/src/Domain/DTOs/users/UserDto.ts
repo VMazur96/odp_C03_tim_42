@@ -3,5 +3,6 @@ export class UserDto {
     public id: number = 0,
     public korisnickoIme: string = "",
     public uloga: string = "user",
+    public profile_image: string | null = null
   ) {}
 }

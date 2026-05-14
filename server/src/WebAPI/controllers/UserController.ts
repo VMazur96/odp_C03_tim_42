@@ -17,9 +17,24 @@ export class UserController {
   private initializeRoutes(): void {
     // ostale metode, npr. /api/v1/user/1 <--- user po ID-ju 1
     //  HTTP method, path,    middlewares,...                   connected method
+    this.router.get("/users/me", authenticate, this.trenutniKorisnik.bind(this));
     this.router.get("/users", authenticate, authorize("admin"), this.korisnici.bind(this));
   }
 
+
+  private async trenutniKorisnik(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ success: false, message: "Niste prijavljeni." });
+        return;
+      }
+      const korisnik = await this.userService.getTrenutniKorisnik(userId);
+      res.status(200).json({ success: true, data: korisnik });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Serverska greska." });
+    }
+  }
   /**
    * GET /api/v1/users
    * Svi korisnici
