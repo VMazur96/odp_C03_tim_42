@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import { userGamesApi } from '../../api_services/user_games/UserGamesAPIService';
 import type { UserGameDto } from '../../models/user_games/UserGameDto';
 import { Link } from 'react-router-dom';
+import type { GameStatus } from '../../models/enums/GameStatus';
 
 export default function MojaKolekcijaStranica() {
+  // Stanja za kolekciju, učitavanje, režim izmene i formu izmene
   const [kolekcija, setKolekcija] = useState<UserGameDto[]>([]);
   const [ucitavanje, setUcitavanje] = useState<boolean>(true);
   
-  // Stanje za izmenu
+  // Stanja za praćenje koje igre su u režimu izmene i za čuvanje trenutnih vrednosti iz forme izmene
   const [editingGameId, setEditingGameId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState({ status: '', rating: 0, note: '' });
-
+  const [editForm, setEditForm] = useState<{ status: GameStatus | '', rating: number, note: string }>({ status: '', rating: 0, note: '' });
+  
+  // Funkcija za osvežavanje kolekcije nakon izmene ili brisanja igre
   const osveziKolekciju = async () => {
     const podaci = await userGamesApi.dohvatiMojuKolekciju();
     setKolekcija(podaci);
@@ -26,7 +29,6 @@ export default function MojaKolekcijaStranica() {
     inicijalnoUcitavanje();
   }, []);
 
-  // Brisanje igre
   const handleObrisi = async (gameId: number) => {
     if (window.confirm("Da li ste sigurni da želite da obrišete ovu igru iz kolekcije?")) {
       const uspesno = await userGamesApi.obrisiIgru(gameId);
@@ -38,31 +40,28 @@ export default function MojaKolekcijaStranica() {
     }
   };
 
-  // Izmena igre
   const zapocniIzmenu = (igra: UserGameDto) => {
     setEditingGameId(igra.gameId);
     setEditForm({
-      status: igra.status,
+      status: igra.status, // Ovo se savrseno gadja jer igra.status vec jeste GameStatus
       rating: igra.rating || 0,
       note: igra.note || ''
     });
   };
 
- const sacuvajIzmene = async (gameId: number) => {
+  const sacuvajIzmene = async (gameId: number) => {
     const { status, rating, note } = editForm;
-    const uspesno = await userGamesApi.izmeniIgru(gameId, status, rating === 0 ? null : rating, note);
+    // status prosledjujemo as GameStatus za svaki slucaj
+    const uspesno = await userGamesApi.izmeniIgru(gameId, status as GameStatus, rating === 0 ? null : rating, note);
     if (uspesno) {
-      await osveziKolekciju(); // Koristimo novo ime bez loading ekrana!
+      await osveziKolekciju();
       setEditingGameId(null);
     } else {
       alert("Greška pri čuvanju izmena.");
     }
   };
 
-  // Kartice igre
   const renderGameCard = (igra: UserGameDto) => {
-    
-    // Ako se igra trenutno menja, prikaži formu
     if (editingGameId === igra.gameId) {
       return (
         <div key={`edit-${igra.gameId}`} className="bg-yellow-50 p-4 rounded-lg shadow border border-yellow-300">
@@ -70,7 +69,8 @@ export default function MojaKolekcijaStranica() {
           <div className="flex flex-col gap-2">
             <select 
               value={editForm.status} 
-              onChange={e => setEditForm({...editForm, status: e.target.value})}
+              // PROMENJENO: e.target.value as GameStatus
+              onChange={e => setEditForm({...editForm, status: e.target.value as GameStatus})}
               className="border p-2 rounded"
             >
               <option value="owned">Imam (Owned)</option>
@@ -103,7 +103,6 @@ export default function MojaKolekcijaStranica() {
       );
     }
 
-    // Standardni prikaz kartice
     return (
       <div key={igra.gameId} className="bg-white p-4 rounded-lg shadow border border-gray-200 flex gap-4 items-start relative group">
         {igra.coverImage ? (
@@ -120,7 +119,6 @@ export default function MojaKolekcijaStranica() {
           </p>
           {igra.note && <p className="text-sm text-gray-500 mt-1 italic">"{igra.note}"</p>}
           
-          {/* Dugmići koji se pojavljuju na hover */}
           <div className="mt-3 flex gap-2">
             <button onClick={() => zapocniIzmenu(igra)} className="text-sm text-blue-500 hover:text-blue-700 font-semibold">Izmeni</button>
             <span className="text-gray-300">|</span>

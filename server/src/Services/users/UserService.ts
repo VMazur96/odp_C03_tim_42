@@ -4,6 +4,7 @@ import { IUserRepository } from "../../Domain/repositories/users/IUserRepository
 import { IUserService } from "../../Domain/services/users/IUserService";
 import { RowDataPacket } from "mysql2";
 import db from "../../Database/connection/DbConnectionPool";
+import bcrypt from "bcrypt";
 
 export class UserService implements IUserService {
   public constructor(private userRepository: IUserRepository) {}
@@ -44,6 +45,36 @@ export class UserService implements IUserService {
 
   async pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]> {
     return await this.userRepository.pretragaKorisnika(query);
+  }
+
+  async azurirajProfil(userId: number, staraLozinka?: string, novaLozinka?: string, novaSlika?: string): Promise<boolean> {
+    let passwordHash = undefined;
+
+    if (novaLozinka) {
+      const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!passwordRegex.test(novaLozinka)) {
+        throw new Error("Lozinka ne ispunjava uslove (min 8 karaktera, 1 veliko slovo, 1 broj).");
+      }
+
+      if (!staraLozinka) {
+        throw new Error("Morate uneti staru lozinku da biste postavili novu.");
+      }
+
+      // Dohvata trenutni hash lozinke iz baze
+      const trenutniHash = await this.userRepository.getPasswordHash(userId);
+      if (!trenutniHash) throw new Error("Korisnik nije pronađen u bazi.");
+
+      // Uporedjuje staraLozinka sa trenutnim hashom
+      const isMatch = await bcrypt.compare(staraLozinka, trenutniHash);
+      if (!isMatch) {
+        throw new Error("Stara lozinka nije tačna.");
+      }
+
+      // Hash nova lozinka
+      passwordHash = await bcrypt.hash(novaLozinka, 10);
+    }
+
+    return await this.userRepository.updateUser(userId, passwordHash, novaSlika);
   }
 
 }

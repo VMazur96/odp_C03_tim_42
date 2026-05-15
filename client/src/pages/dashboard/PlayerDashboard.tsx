@@ -1,36 +1,59 @@
 import { useState, useEffect, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import AuthContext from '../../contexts/auth/AuthContext';
 import { userGamesApi } from '../../api_services/user_games/UserGamesAPIService';
+import { sessionApi } from '../../api_services/sessions/SessionAPIService';
 import type { UserGameDto } from '../../models/user_games/UserGameDto';
-import { Link } from 'react-router-dom';
+import type { SessionDto } from '../../models/sessions/SessionDto';
 
 export default function PlayerDashboard() {
   const authContext = useContext(AuthContext);
   const [kolekcija, setKolekcija] = useState<UserGameDto[]>([]);
+  const [sesije, setSesije] = useState<SessionDto[]>([]);
   const [ucitavanje, setUcitavanje] = useState<boolean>(true);
 
+  // Funkcija koja dohvata podatke kolekcije i sesija sa servera
+  const fetchPodatke = async () => {
+    const podaciKolekcije = await userGamesApi.dohvatiMojuKolekciju();
+    const podaciSesija = await sessionApi.dohvatiMojeSesije();
+    return { podaciKolekcije, podaciSesija };
+  };
+
   useEffect(() => {
-    const ucitajKolekciju = async () => {
-      const podaci = await userGamesApi.dohvatiMojuKolekciju();
-      setKolekcija(podaci);
-      setUcitavanje(false);
+    let isMounted = true;
+
+    const init = async () => {
+      const { podaciKolekcije, podaciSesija } = await fetchPodatke();
+      if (isMounted) {
+        setKolekcija(podaciKolekcije);
+        setSesije(podaciSesija);
+        setUcitavanje(false);
+      }
     };
-    ucitajKolekciju();
+
+    init();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  if (ucitavanje) return <div className="min-h-screen flex justify-center items-center">Učitavanje...</div>;
+  if (ucitavanje) return <div className="min-h-screen flex justify-center items-center text-xl">Učitavanje...</div>;
 
-  // Ukupno igara i prosečna ocena
+  // Ukupno igara i prosečna ocena (iz kolekcije)
   const ukupnoIgara = kolekcija.length;
   const igreSaOcenom = kolekcija.filter(g => g.rating !== null && g.rating > 0);
-  const prosecnaOcena = igreSaOcenom.length > 0 
-    ? (igreSaOcenom.reduce((suma, igra) => suma + (igra.rating || 0), 0) / igreSaOcenom.length).toFixed(1) 
+  const prosecnaOcena = igreSaOcenom.length > 0
+    ? (igreSaOcenom.reduce((suma, igra) => suma + (igra.rating || 0), 0) / igreSaOcenom.length).toFixed(1)
     : 'Nema ocena';
 
-  // Najigranija mehanika
+  // Najigranija mehanika (RAČUNAMO IZ ODIGRANIH SESIJA)
   const mehanikeCount: Record<string, number> = {};
-  kolekcija.forEach(igra => {
-    if (igra.mechanics && (igra.status === 'owned' || igra.status === 'previously_owned')) {
+
+  sesije.forEach(sesija => {
+    // Tražimo igru u kolekciji da bismo izvukli njene mehanike
+    const igra = kolekcija.find(g => g.gameId === sesija.gameId);
+    if (igra && igra.mechanics) {
       igra.mechanics.forEach(m => {
         mehanikeCount[m] = (mehanikeCount[m] || 0) + 1;
       });
@@ -71,10 +94,16 @@ export default function PlayerDashboard() {
         <div className="bg-white p-6 rounded-xl shadow border border-gray-200">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Brzi linkovi</h2>
           <div className="flex flex-wrap gap-4">
-            <Link to="/kolekcija" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+            <Link to="/kolekcija" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow">
               Upravljaj Kolekcijom
             </Link>
-            <Link to="/profil" className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+            <Link to="/sesije" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow">
+              Moje Sesije
+            </Link>
+            <Link to="/moje-recenzije" className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow">
+              Moje Recenzije
+            </Link>
+            <Link to="/profil" className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow">
               Izmeni Profil
             </Link>
           </div>

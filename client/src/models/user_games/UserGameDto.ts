@@ -1,7 +1,9 @@
+import type { GameStatus } from '../enums/GameStatus';
+
 export interface UserGameDto {
   userId: number;
   gameId: number;
-  status: 'owned' | 'wishlist' | 'previously_owned';
+  status: GameStatus;
   rating: number | null;
   note: string | null;
   gameName: string;

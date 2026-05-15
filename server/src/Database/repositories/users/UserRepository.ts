@@ -160,4 +160,41 @@ async create(user: User): Promise<User> {
       return [];
     }
   }
+
+  async updateUser(userId: number, passwordHash?: string, profileImage?: string): Promise<boolean> {
+    try {
+      const updates = [];
+      const params = [];
+      
+      if (passwordHash) {
+        updates.push('password_hash = ?');
+        params.push(passwordHash);
+      }
+      if (profileImage) {
+        updates.push('profile_image = ?');
+        params.push(profileImage);
+      }
+      
+      if (updates.length === 0) return true;
+
+      const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+      params.push(userId);
+      
+      const [result] = await db.execute<ResultSetHeader>(query, params);
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Greska pri azuriranju profila:", error);
+      return false;
+    }
+  }
+
+  async getPasswordHash(userId: number): Promise<string | null> {
+    try {
+      const [rows] = await db.execute<RowDataPacket[]>('SELECT password_hash FROM users WHERE id = ?', [userId]);
+      if (rows.length > 0) return rows[0].password_hash;
+      return null;
+    } catch {
+      return null;
+    }
+  }
 }

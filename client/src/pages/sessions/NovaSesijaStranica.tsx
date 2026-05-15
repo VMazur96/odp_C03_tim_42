@@ -105,6 +105,7 @@ export default function NovaSesijaStranica() {
               <input 
                 type="date" 
                 value={date}
+                max={new Date().toISOString().slice(0, 10)}
                 onChange={e => setDate(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
                 required

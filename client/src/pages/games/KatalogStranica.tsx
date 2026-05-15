@@ -4,26 +4,31 @@ import { gameApi } from '../../api_services/games/GameAPIService';
 import AuthContext from '../../contexts/auth/AuthContext';
 import { userGamesApi } from '../../api_services/user_games/UserGamesAPIService';
 import { Link } from 'react-router-dom';
+import type { GameStatus } from '../../models/enums/GameStatus';
 
 export default function KatalogStranica() {
+  // Stanja za igre, učitavanje, status igara, pretragu, sortiranje i filtriranje
   const [igre, setIgre] = useState<GameDto[]>([]);
   const [ucitavanje, setUcitavanje] = useState<boolean>(true);
-  
-  const [statusiIgara, setStatusiIgara] = useState<Record<number, string>>({});
 
-  // STATE-OVI ZA PRETRAGU I SORTIRANJE
+  // Stanje za praćenje statusa svake igre
+  const [statusiIgara, setStatusiIgara] = useState<Record<number, GameStatus>>({});
+
+  // Stanja za pretragu, sortiranje i filtriranje
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortiranje, setSortiranje] = useState<string>('naziv');
   const [filterTrajanje, setFilterTrajanje] = useState<number>(0);
-  
-  // Filteri za broj igrača, težinu i mehaniku
+
+  // Nova stanja za dodatne filtere
   const [filterIgraci, setFilterIgraci] = useState<string>('');
   const [filterTezina, setFilterTezina] = useState<string>('');
   const [filterMehanika, setFilterMehanika] = useState<string>('');
 
+  // Stanja za ocene i beleške koje korisnik unosi prilikom dodavanja igre u kolekciju 
   const [oceneIgara, setOceneIgara] = useState<Record<number, number>>({});
   const [beleskeIgara, setBeleskeIgara] = useState<Record<number, string>>({});
-
+  
+  // Kontekst za autentifikaciju
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
@@ -35,12 +40,14 @@ export default function KatalogStranica() {
     pronadjiIgre();
   }, []);
 
-  const handleStatusChange = (igraId: number, noviStatus: string) => {
+
+  const handleStatusChange = (igraId: number, noviStatus: GameStatus) => {
     setStatusiIgara(prev => ({ ...prev, [igraId]: noviStatus }));
   };
 
   const handleDodajUKolekciju = async (igraId: number) => {
-    const status = statusiIgara[igraId] || 'wishlist'; 
+  
+    const status: GameStatus = statusiIgara[igraId] || 'wishlist'; 
     
     const ocena = oceneIgara[igraId] || null;
     const beleska = beleskeIgara[igraId] || null;
@@ -53,17 +60,14 @@ export default function KatalogStranica() {
     }
   };
 
-  // Padajuci meni 
   const sveMehanike = Array.from(
     new Set(igre.flatMap(igra => igra.mechanics || []))
   ).sort();
 
-  // FILTRIRANJE I SORTIRANJE
   const prikazaneIgre = igre
     .filter((igra) => igra.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .filter((igra) => filterTrajanje === 0 || igra.duration_min <= filterTrajanje)
     .filter((igra) => {
-      // Filteri za broj igrača, težinu i mehaniku
       if (filterIgraci) {
         const trazeno = parseInt(filterIgraci, 10);
         if (trazeno < igra.min_players || trazeno > igra.max_players) return false;
@@ -76,7 +80,7 @@ export default function KatalogStranica() {
       if (sortiranje === 'naziv') return a.name.localeCompare(b.name);
       if (sortiranje === 'godina') return (b.release_year || 0) - (a.release_year || 0);
       if (sortiranje === 'tezina') return b.weight - a.weight;
-      if (sortiranje === 'ocena') return (b.average_rating || 0) - (a.average_rating || 0); // Sortiranje po oceni
+      if (sortiranje === 'ocena') return (b.average_rating || 0) - (a.average_rating || 0);
       return 0;
     });
 
@@ -94,9 +98,7 @@ export default function KatalogStranica() {
           </h1>
         </div>
 
-        {/* MENI ZA PRETRAGU I SORTIRANJE*/}
         <div className="flex flex-col md:flex-row justify-between items-center bg-blue-50 p-4 rounded-lg mb-8 shadow-sm gap-4">
-          
           <input 
             type="text" 
             placeholder="Pretraži igre..." 
@@ -106,7 +108,6 @@ export default function KatalogStranica() {
           />
           
           <div className="flex flex-wrap justify-center gap-2 w-full md:w-3/4">
-            
             <input 
               type="number" 
               placeholder="Broj igrača" 
@@ -187,7 +188,7 @@ export default function KatalogStranica() {
                       </h2>
                       <p className="text-gray-600 mt-2 text-sm"><strong>Igrači:</strong> {igra.min_players} - {igra.max_players}</p>
                       <p className="text-gray-600 text-sm"><strong>Trajanje:</strong> {igra.duration_min} min</p>
-                      <p className="text-gray-600 text-sm"><strong>Težina:</strong> {igra.weight} / 5</p>
+                      <p className="text-gray-600 text-sm"><strong>Težina:</strong> {igra.weight}/5.0</p>
                       <p className="text-gray-600 text-xs mt-3 italic"><strong>Izdavač:</strong> {igra.publisher} ({igra.release_year})</p>
                     </div>
                   </div>
@@ -197,7 +198,8 @@ export default function KatalogStranica() {
                   <div className="p-4 pt-0 border-t border-gray-100 mt-4 bg-gray-50">
                     <select
                       value={statusiIgara[igra.id] || 'wishlist'}
-                      onChange={(e) => handleStatusChange(igra.id, e.target.value)}
+                      // PROMENJENO: Pretvori e.target.value u GameStatus
+                      onChange={(e) => handleStatusChange(igra.id, e.target.value as GameStatus)}
                       className="w-full p-2 mb-2 text-sm border border-gray-300 rounded focus:ring focus:ring-blue-200 focus:outline-none"
                     >
                       <option value="wishlist">Želim (Wishlist)</option>

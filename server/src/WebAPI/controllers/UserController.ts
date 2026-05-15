@@ -20,6 +20,7 @@ export class UserController {
     this.router.get("/users/me", authenticate, this.trenutniKorisnik.bind(this));
     this.router.get("/users", authenticate, authorize("admin"), this.korisnici.bind(this));
     this.router.get("/users/search", authenticate, this.pretraga.bind(this));
+    this.router.put("/users/me", authenticate, this.azurirajProfil.bind(this));
   }
 
 
@@ -63,6 +64,38 @@ export class UserController {
       res.status(200).json({ success: true, data: korisnici });
     } catch (error) {
       res.status(500).json({ success: false, message: "Serverska greska." });
+    }
+  }
+
+  // Azuriranje profila
+  private async azurirajProfil(req: Request, res: Response): Promise<void> {
+    try {
+      // Ocekuje da salje staraLozinka, novaLozinka i novaSlika
+      const { oldPassword, password, profileImage } = req.body; 
+      const userId = req.user!.id;
+
+      if (profileImage) {
+        // Validacija velicine slike (maks 2MB)
+        const base64Data = profileImage.split(',')[1];
+        if (base64Data) {
+          const velicinaUBajtovima = Buffer.from(base64Data, 'base64').length;
+          const dvaMegabajta = 2 * 1024 * 1024;
+
+          if (velicinaUBajtovima > dvaMegabajta) {
+            res.status(400).json({ success: false, message: "Slika premašuje maksimalnu veličinu od 2MB." });
+            return;
+          }
+        }
+      }
+      
+      const uspeh = await this.userService.azurirajProfil(userId, oldPassword, password, profileImage);
+      res.json({ success: uspeh });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(400).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: "Greška na serveru." });
+      }
     }
   }
 

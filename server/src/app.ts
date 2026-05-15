@@ -19,6 +19,9 @@ import { UserGameController } from './WebAPI/controllers/UserGameController';
 import { SessionRepository } from './Database/repositories/sessions/SessionRepository';
 import { SessionService } from './Services/sessions/SessionService';
 import { SessionController } from './WebAPI/controllers/SessionController';
+import { ReviewRepository } from "./Database/repositories/reviews/ReviewRepository";
+import { ReviewService } from "./Services/reviews/ReviewService";
+import { ReviewController } from "./WebAPI/controllers/ReviewController";
 
 require('dotenv').config();
 
@@ -33,6 +36,8 @@ const userRepository: IUserRepository = new UserRepository();
 const gameRepository: IGameRepository = new GameRepository();
 const userGameRepository = new UserGameRepository();
 const sessionRepository = new SessionRepository();
+const reviewRepository = new ReviewRepository();
+
 
 // Services
 const authService: IAuthService = new AuthService(userRepository);
@@ -40,6 +45,7 @@ const userService: IUserService = new UserService(userRepository);
 const gameService: IGameService = new GameService(gameRepository);
 const userGameService = new UserGameService(userGameRepository);
 const sessionService = new SessionService(sessionRepository);
+const reviewService = new ReviewService(reviewRepository);
 
 // WebAPI routes
 const authController = new AuthController(authService);
@@ -47,6 +53,7 @@ const userController = new UserController(userService);
 const gameController = new GameController(gameService);
 const userGameController = new UserGameController(userGameService);
 const sessionController = new SessionController(sessionService);
+const reviewController = new ReviewController(reviewService);
 
 // Registering routes (Vraćeno na tvoj originalni dizajn)
 app.use('/api/v1', authController.getRouter());
@@ -54,5 +61,6 @@ app.use('/api/v1', userController.getRouter());
 app.use('/api/v1', gameController.getRouter());
 app.use('/api/v1/user-games', userGameController.getRouter());
 app.use('/api/v1/sessions', sessionController.router);
+app.use("/api/v1/reviews", reviewController.router);
 
 export default app;

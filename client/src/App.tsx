@@ -14,6 +14,7 @@ import ProfilStranica from "./pages/profil/ProfilStranica";
 import MojeSesijeStranica from "./pages/sessions/MojeSesijeStranica";
 import NovaSesijaStranica from "./pages/sessions/NovaSesijaStranica";
 import { PročitajVrednostPoKljuču } from "./helpers/local_storage";
+import MojeRecenzijeStranica from './pages/reviews/MojeRecenzijeStranica';
 import "./index.css";
 
 function App() {
@@ -53,9 +54,13 @@ function App() {
                 Moja Kolekcija
               </Link>
               
-              {/* DODATO: MOJE SESIJE */}
               <Link to="/sesije" className={`nav-btn px-4 py-2 rounded ${location.pathname.includes('/sesije') ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                 Moje Sesije
+              </Link>
+
+              {/* DODATO: MOJE RECENZIJE U NAVBARU */}
+              <Link to="/moje-recenzije" className={`nav-btn px-4 py-2 rounded ${location.pathname.includes('/moje-recenzije') ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
+                Moje Recenzije
               </Link>
 
               <Link to="/profil" className={`nav-btn flex items-center gap-2 px-4 py-2 rounded ${location.pathname === '/profil' ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
@@ -86,9 +91,10 @@ function App() {
         <Route path="/kolekcija" element={<MojaKolekcijaStranica />} />
         <Route path="/profil" element={<ProfilStranica />} />
         
-        {/* DODATO: RUTE ZA SESIJE */}
         <Route path="/sesije" element={<MojeSesijeStranica />} />
         <Route path="/nova-sesija" element={<NovaSesijaStranica />} />
+
+        <Route path="/moje-recenzije" element={<MojeRecenzijeStranica />} />
         
         <Route path="/admin-dashboard" element={<div className="p-10 text-center text-2xl font-bold">Admin Panel (U izradi)</div>} />
 

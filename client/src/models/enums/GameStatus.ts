@@ -1,0 +1,1 @@
+export type GameStatus = 'owned' | 'wishlist' | 'previously_owned';

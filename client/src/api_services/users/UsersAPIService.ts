@@ -52,5 +52,23 @@ export const usersApi: IUsersAPIService = {
     } catch {
       return [];
     }
+  },
+
+async azurirajProfil(oldPassword?: string, password?: string, profileImage?: string): Promise<boolean> {
+    try {
+      const token = localStorage.getItem("authToken");
+      await axios.put(`${API_URL}/me`, 
+        { oldPassword, password, profileImage },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return true;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.message || "Došlo je do greške pri ažuriranju profila.");
+      } else {
+        alert("Dogodila se neočekivana greška.");
+      }
+      return false;
+    }
   }
 };

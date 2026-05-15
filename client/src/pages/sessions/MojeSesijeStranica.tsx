@@ -38,7 +38,7 @@ export default function MojeSesijeStranica() {
     }
   };
 
-  // Čuvanje izmena iz modala
+  // Cuvanje izmena iz modala
   const sacuvajIzmene = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sesijaZaIzmenu) return;
@@ -51,13 +51,13 @@ export default function MojeSesijeStranica() {
       sesijaZaIzmenu.note
     );
 
-    // Čuvamo poene za svakog igrača ponaosob
+    // Cuvamo poene za svakog igraCa ponaosob
     for (const igrac of sesijaZaIzmenu.players) {
       await sessionApi.azurirajIgraca(sesijaZaIzmenu.id, igrac.userId, igrac.score, igrac.winner);
     }
 
-    setSesijaZaIzmenu(null); // Zatvara modal
-    ucitajSesije(); // Osvežava listu na ekranu
+    setSesijaZaIzmenu(null);
+    ucitajSesije();
   };
 
   if (ucitavanje) return <div className="min-h-screen flex justify-center items-center text-xl">Učitavanje sesija...</div>;
@@ -148,6 +148,7 @@ export default function MojeSesijeStranica() {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Datum</label>
                   <input type="date" value={sesijaZaIzmenu.date.slice(0, 10)} 
+                    max={new Date().toISOString().slice(0, 10)}
                     onChange={e => setSesijaZaIzmenu({...sesijaZaIzmenu, date: e.target.value})} 
                     className="w-full p-2 border rounded" required />
                 </div>
@@ -176,13 +177,14 @@ export default function MojeSesijeStranica() {
                     <div className="flex items-center gap-4">
                       <label className="flex items-center gap-1 text-sm text-gray-600">
                         Poeni:
-                        <input type="number" value={igrac.score || ''} 
+                        <input type="number" 
+                          value={igrac.score !== null ? igrac.score : ''} 
                           onChange={(e) => {
-                            const noviIgraci = [...sesijaZaIzmenu.players];
-                            noviIgraci[index].score = e.target.value ? Number(e.target.value) : null;
-                            setSesijaZaIzmenu({...sesijaZaIzmenu, players: noviIgraci});
-                          }} 
-                          className="w-16 p-1 border rounded text-center" />
+                          const noviIgraci = [...sesijaZaIzmenu.players];
+                          noviIgraci[index].score = e.target.value !== '' ? Number(e.target.value) : null;
+                          setSesijaZaIzmenu({...sesijaZaIzmenu, players: noviIgraci});
+                        }} 
+                        className="w-16 p-1 border rounded text-center" min="0" />
                       </label>
                       <label className="flex items-center gap-1 text-sm font-bold text-yellow-600 cursor-pointer">
                         <input type="checkbox" checked={igrac.winner} 

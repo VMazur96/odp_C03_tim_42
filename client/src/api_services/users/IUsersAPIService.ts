@@ -7,4 +7,5 @@ export interface IUsersAPIService {
     getSviKorisnici(token: string): Promise<UserDto[]>;
     getMe(token: string): Promise<UserDto | null>;
     pretragaKorisnika(query: string): Promise<UserDto[]>;
+    azurirajProfil(oldPassword?: string, password?: string, profileImage?: string): Promise<boolean>;
 }

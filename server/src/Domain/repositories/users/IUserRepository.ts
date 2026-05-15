@@ -55,4 +55,8 @@ export interface IUserRepository {
 
   getByEmail(email: string): Promise<User>; //pronalazi korisnika po email adresi
 
+  updateUser(userId: number, passwordHash?: string, profileImage?: string): Promise<boolean>;
+
+  getPasswordHash(userId: number): Promise<string | null>;
+
 pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]>;}
