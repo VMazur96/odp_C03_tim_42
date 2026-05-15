@@ -62,7 +62,7 @@ export default function PlayerDashboard() {
           </div>
           <div className="bg-white p-6 rounded-xl shadow border border-gray-200 text-center">
             <span className="block text-gray-500 mb-2">Najigranija mehanika</span>
-            <span className="text-3xl font-bold text-purple-600 mt-2 block break-words">
+            <span className="text-3xl font-bold text-purple-600 mt-2 block wrap-break-word">
               {najigranijaMehanika}
             </span>
           </div>

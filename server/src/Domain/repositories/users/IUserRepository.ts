@@ -54,4 +54,5 @@ export interface IUserRepository {
   exists(id: number): Promise<boolean>;
 
   getByEmail(email: string): Promise<User>; //pronalazi korisnika po email adresi
-}
+
+pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]>;}

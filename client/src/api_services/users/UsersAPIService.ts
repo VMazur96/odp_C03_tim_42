@@ -28,5 +28,29 @@ export const usersApi: IUsersAPIService = {
       console.error("Greska pri dohvatanju korisnika:", error);
       return null;
     }
+  },
+
+ async pretragaKorisnika(query: string): Promise<UserDto[]> {
+    try {
+      const token = localStorage.getItem("authToken");
+      
+      const res = await axios.get<{
+        success: boolean; 
+        data: { id: number; username: string; profile_picture: string | null }[]
+      }>(`${API_URL}/search?q=${query}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.data || !res.data.data) return [];
+
+      return res.data.data.map(u => ({
+        id: u.id,
+        korisnickoIme: u.username,
+        profile_image: u.profile_picture,
+        uloga: "player"
+      }));
+    } catch {
+      return [];
+    }
   }
 };

@@ -11,6 +11,8 @@ import PlayerDashboard from "./pages/dashboard/PlayerDashboard";
 import DetaljiIgreStranica from './pages/games/DetaljiIgreStranica';
 import MojaKolekcijaStranica from "./pages/kolekcija/MojaKolekcijaStranica";
 import ProfilStranica from "./pages/profil/ProfilStranica";
+import MojeSesijeStranica from "./pages/sessions/MojeSesijeStranica";
+import NovaSesijaStranica from "./pages/sessions/NovaSesijaStranica";
 import { PročitajVrednostPoKljuču } from "./helpers/local_storage";
 import "./index.css";
 
@@ -30,7 +32,7 @@ function App() {
 
   return (
     <div>
-      <nav className="nav-bar flex justify-between items-center px-8 py-4 bg-gray-800 text-white">
+      <nav className="nav-bar flex justify-between items-center px-8 py-4 bg-gray-800 text-white shadow-md relative z-50">
         <div className="flex gap-4">
           <Link to="/katalog" className={`nav-btn px-4 py-2 rounded ${location.pathname === '/katalog' ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
             Katalog Igara
@@ -50,6 +52,12 @@ function App() {
               <Link to="/kolekcija" className={`nav-btn px-4 py-2 rounded ${location.pathname === '/kolekcija' ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                 Moja Kolekcija
               </Link>
+              
+              {/* DODATO: MOJE SESIJE */}
+              <Link to="/sesije" className={`nav-btn px-4 py-2 rounded ${location.pathname.includes('/sesije') ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
+                Moje Sesije
+              </Link>
+
               <Link to="/profil" className={`nav-btn flex items-center gap-2 px-4 py-2 rounded ${location.pathname === '/profil' ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                 {authContext?.user?.profile_picture ? (
                   <img src={authContext.user.profile_picture} alt="Profil" className="w-6 h-6 rounded-full object-cover" />
@@ -77,6 +85,11 @@ function App() {
         <Route path="/player-dashboard" element={<PlayerDashboard />} />
         <Route path="/kolekcija" element={<MojaKolekcijaStranica />} />
         <Route path="/profil" element={<ProfilStranica />} />
+        
+        {/* DODATO: RUTE ZA SESIJE */}
+        <Route path="/sesije" element={<MojeSesijeStranica />} />
+        <Route path="/nova-sesija" element={<NovaSesijaStranica />} />
+        
         <Route path="/admin-dashboard" element={<div className="p-10 text-center text-2xl font-bold">Admin Panel (U izradi)</div>} />
 
         <Route path="/404" element={<NotFoundStranica />} />

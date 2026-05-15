@@ -19,6 +19,7 @@ export class UserController {
     //  HTTP method, path,    middlewares,...                   connected method
     this.router.get("/users/me", authenticate, this.trenutniKorisnik.bind(this));
     this.router.get("/users", authenticate, authorize("admin"), this.korisnici.bind(this));
+    this.router.get("/users/search", authenticate, this.pretraga.bind(this));
   }
 
 
@@ -48,6 +49,20 @@ export class UserController {
       return;
     } catch (error) {
       res.status(500).json({ success: false, message: error });
+    }
+  }
+
+  private async pretraga(req: Request, res: Response): Promise<void> {
+    try {
+      const q = req.query.q as string;
+      if (!q) {
+        res.status(400).json({ success: false, message: "Unesite parametar za pretragu" });
+        return;
+      }
+      const korisnici = await this.userService.pretragaKorisnika(q);
+      res.status(200).json({ success: true, data: korisnici });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Serverska greska." });
     }
   }
 

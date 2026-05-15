@@ -148,4 +148,16 @@ async create(user: User): Promise<User> {
       return false;
     }
   }
+
+  async pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]> {
+    try {
+      // ISPRAVLJENO: Selektujemo profile_image iz baze
+      const sql = 'SELECT id, username, profile_image FROM users WHERE username LIKE ? LIMIT 10';
+      const [rows] = await db.execute(sql, [`%${query}%`]);
+      return rows as { id: number; username: string; profile_image: string | null }[];
+    } catch (error) {
+      console.error("Greska pri pretrazi korisnika:", error);
+      return [];
+    }
+  }
 }

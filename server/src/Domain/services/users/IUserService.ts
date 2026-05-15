@@ -7,4 +7,4 @@ export interface IUserService {
      */
   getSviKorisnici(): Promise<UserDto[]>;
   getTrenutniKorisnik(id: number): Promise<UserDto | null>;
-}
+pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]>;}

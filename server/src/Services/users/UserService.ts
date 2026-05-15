@@ -41,4 +41,9 @@ export class UserService implements IUserService {
       return null;
     }
   }
+
+  async pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]> {
+    return await this.userRepository.pretragaKorisnika(query);
+  }
+
 }
