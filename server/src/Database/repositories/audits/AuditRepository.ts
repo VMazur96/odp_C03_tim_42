@@ -3,7 +3,7 @@ import { RowDataPacket } from "mysql2";
 
 export class AuditRepository {
   // Dohvatanje svih audit logova sa informacijom o korisniku
-  async getAllLogs(): Promise<any[]> {
+  async getAllLogs(): Promise<Record<string, unknown>[]> {
     try {
       const query = `
         SELECT a.id, a.action, a.details, a.created_at, u.username 

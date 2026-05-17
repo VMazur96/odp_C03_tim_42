@@ -27,7 +27,7 @@ export class UserGameService implements IUserGameService {
     }
 
     const userGame = { userId, gameId, status, rating, note };
-    return await this.userGameRepo.dodajUKolekciju(userGame as any);
+    return await this.userGameRepo.dodajUKolekciju(userGame as unknown as UserGame);
   }
 
   // Izmena igre

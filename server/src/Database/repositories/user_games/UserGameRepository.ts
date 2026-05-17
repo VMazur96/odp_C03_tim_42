@@ -73,7 +73,7 @@ export class UserGameRepository implements IUserGameRepository {
                     gameName: gameRows[0].name,
                     coverImage: gameRows[0].cover_image,
                     mechanics: mehanikeIgre 
-                } as any); 
+                } as unknown as UserGame); 
             }
         }
 

@@ -3,7 +3,6 @@ import type { AuthFormProps } from "../../types/props/auth_form_props/AuthFormPr
 import { useState } from "react";
 
 export function RegistracijaForma({ authApi }: AuthFormProps) {
-  // TODO: ADD STATE VARIABLES
   //const { login } = useAuth();
 
   // 1. STATE VARIJABLE: Posto ima vise polja po zahtevu ForgeBoard baze, dodate su ovde
@@ -42,7 +41,6 @@ export function RegistracijaForma({ authApi }: AuthFormProps) {
     setGreska("");
     setUspeh("");
 
-    // TODO: Add register logic
     // FRONTEND VALIDACIJA: Proverava uslove pre nego sto optereti servere
     if (username.length < 3 || username.length > 40) {
       setGreska("Korisnicko ime mora imati izmedju 3 i 40 karaktera.");

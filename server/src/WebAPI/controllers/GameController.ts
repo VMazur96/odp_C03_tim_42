@@ -68,8 +68,12 @@ export class GameController {
       } else {
         res.status(400).json({ success: false, message: "Neuspešno dodavanje igre" });
       }
-    } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message || "Greška servera" });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(400).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: "Greška servera" });
+      }
     }
   }
 
@@ -92,8 +96,12 @@ export class GameController {
       } else {
         res.status(404).json({ success: false, message: "Igra nije pronađena." });
       }
-    } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message || "Greška servera" });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(400).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: "Greška servera" });
+      }
     }
   }
 
@@ -108,8 +116,12 @@ export class GameController {
       } else {
         res.status(400).json({ success: false, message: "Neuspešno brisanje igre (Igra možda ne postoji)" });
       }
-    } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message || "Greška servera" });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(400).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: "Greška servera" });
+      }
     }
   }
 

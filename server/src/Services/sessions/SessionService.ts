@@ -25,7 +25,7 @@ export class SessionService implements ISessionService {
     const igraUKolekciji = kolekcija.find(g => g.gameId === gameId);
     
     if (!igraUKolekciji || igraUKolekciji.status !== 'owned') {
-      throw new Error("Igra nije u vašoj kolekciji (mora imati status 'owned').");
+      throw new Error("Igra nije u vašoj kolekciji.");
     }
 
     const novaSesija = new Session(0, creatorId, gameId, date, durationMin, note);

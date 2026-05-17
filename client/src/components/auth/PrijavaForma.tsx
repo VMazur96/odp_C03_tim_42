@@ -3,7 +3,6 @@ import { useAuth } from "../../hooks/auth/useAuthHook";
 import { useState } from "react";
 
 export function PrijavaForma({ authApi }: AuthFormProps) {
-  // TODO: ADD STATE VARIABLES
   // 1. STATE VARIJABLE: Cuva ono sto korisnik trenutno kuca u polja
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

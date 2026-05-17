@@ -4,7 +4,7 @@ export class AuditService {
   constructor(private auditRepo: AuditRepository) {}
 
   // Dohvatanje svih logova
-  async dohvatiSveLogove(): Promise<any[]> {
+  async dohvatiSveLogove(): Promise<Record<string, unknown>[]> {
     return await this.auditRepo.getAllLogs();
   }
   

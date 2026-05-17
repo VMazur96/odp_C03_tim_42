@@ -66,7 +66,7 @@ export class GameRepository implements IGameRepository {
           cover_image: r.cover_image,
           average_rating: r.average_rating ? parseFloat(Number(r.average_rating).toFixed(1)) : null,
           mechanics: r.mechanics_list ? r.mechanics_list.split(',') : []
-        } as any;
+        } as unknown as Game;
       }
       return null;
     } catch (error) {
@@ -100,7 +100,7 @@ export class GameRepository implements IGameRepository {
         cover_image: r.cover_image,
         average_rating: r.average_rating ? parseFloat(Number(r.average_rating).toFixed(1)) : null,
         mechanics: r.mechanics_list ? r.mechanics_list.split(',') : []
-      } as any));
+      } as unknown as Game));
     } catch (error) {
       console.error("Greska pri pronalazenju svih igara:", error);
       return [];

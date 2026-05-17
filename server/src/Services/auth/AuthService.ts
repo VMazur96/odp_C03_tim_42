@@ -24,12 +24,12 @@ export class AuthService implements IAuthService {
 
     const existingUser = await this.userRepository.getByUsername(username);
     if (existingUser.id !== 0) {
-      throw new Error("Korisničko ime nije validno ili je zauzeto");
+      throw new Error("Korisničko ime nije validno ili je zauzeto.");
     }
 
     const existingEmail = await this.userRepository.getByEmail(email);
     if (existingEmail.id !== 0){ 
-      throw new Error("Email je već zauzet");
+      throw new Error("Email je već zauzet.");
     }
     
     const hashedPassword = await bcrypt.hash(lozinka, this.saltRounds);

@@ -10,14 +10,15 @@ export class UserService implements IUserService {
   public constructor(private userRepository: IUserRepository) {}
 
   // Dohvatanje svih korisnika
-  async getSviKorisnici(): Promise<any[]> {
+  async getSviKorisnici(): Promise<UserDto[]> {
     const korisnici = await this.userRepository.getAll();
-    return korisnici.map(u => ({
-      id: u.id,
-      username: u.username,
-      email: u.email,
-      role: u.role
-    }));
+    
+    return korisnici.map(u => new UserDto(
+      u.id,
+      u.username, 
+      u.role,     
+      u.profile_image || null
+    ));
   }
 
   // Dohvatanje trenutnog korisnika po ID-u
@@ -56,7 +57,7 @@ export class UserService implements IUserService {
     if (novaLozinka) {
       const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
       if (!passwordRegex.test(novaLozinka)) {
-        throw new Error("Lozinka ne ispunjava uslove (min 8 karaktera, 1 veliko slovo, 1 broj).");
+        throw new Error("Lozinka ne ispunjava uslove.");
       }
 
       if (!staraLozinka) {

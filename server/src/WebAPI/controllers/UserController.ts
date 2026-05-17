@@ -138,8 +138,12 @@ export class UserController {
       } else {
         res.status(404).json({ success: false, message: "Korisnik nije pronađen." });
       }
-    } catch (error: any) {
-      res.status(400).json({ success: false, message: error.message || "Greška servera." });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(400).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: "Greška servera." });
+      }
     }
   }
 
