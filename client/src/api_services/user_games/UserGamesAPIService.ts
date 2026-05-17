@@ -1,16 +1,17 @@
 import axios from "axios";
-import { PročitajVrednostPoKljuču } from "../../helpers/local_storage";
+import { procitajVrednostPoKljucu } from "../../helpers/local_storage";
 import type { IUserGamesAPIService } from "./IUserGamesAPIService";
 import type { UserGameDto } from "../../models/user_games/UserGameDto";
 import type { GameStatus } from '../../models/enums/GameStatus';
 
-const API_URL = import.meta.env.VITE_API_URL + "user-games";
+const API_URL = import.meta.env.VITE_API_URL + "collection";
 
 export const userGamesApi: IUserGamesAPIService = {
   
+  // Dodaje igru u kolekciju korisnika
   async dodajUKolekciju(gameId: number, status: GameStatus, rating: number | null = null, note: string | null = null): Promise<boolean> {
     try {
-      const token = PročitajVrednostPoKljuču("authToken");
+      const token = procitajVrednostPoKljucu("authToken");
       if (!token) {
         console.error("Nema tokena, korisnik nije prijavljen.");
         return false;
@@ -34,9 +35,10 @@ export const userGamesApi: IUserGamesAPIService = {
     }
   },
 
+  // Dohvata kolekciju igara korisnika
   async dohvatiMojuKolekciju(): Promise<UserGameDto[]> {
     try {
-      const token = PročitajVrednostPoKljuču("authToken");
+      const token = procitajVrednostPoKljucu("authToken");
       if (!token) return [];
 
       const res = await axios.get(API_URL, {
@@ -55,6 +57,7 @@ export const userGamesApi: IUserGamesAPIService = {
     }
   },
 
+  // Izmenjuje status, ocenu ili belešku o igri u kolekciji
   async izmeniIgru(gameId: number, status: GameStatus, rating: number | null, note: string | null): Promise<boolean> {
     try {
       const token = localStorage.getItem("authToken");
@@ -69,6 +72,7 @@ export const userGamesApi: IUserGamesAPIService = {
     }
   },
 
+  // Brise igru iz kolekcije korisnika
   async obrisiIgru(gameId: number): Promise<boolean> {
     try {
       const token = localStorage.getItem("authToken");

@@ -20,6 +20,7 @@ export class ReviewRepository implements IReviewRepository {
     }
   }
 
+  // Kreiranje nove recenzije
   async create(gameId: number, userId: number, title: string, body: string, rating: number): Promise<boolean> {
     try {
       const query = `INSERT INTO reviews (game_id, user_id, title, body, rating) VALUES (?, ?, ?, ?, ?)`;
@@ -36,6 +37,7 @@ export class ReviewRepository implements IReviewRepository {
     }
   }
 
+  // Dohvatanje recenzija po ID-u igre
   async getByGameId(gameId: number): Promise<ReviewDto[]> {
     try {
       const query = `
@@ -54,6 +56,7 @@ export class ReviewRepository implements IReviewRepository {
     }
   }
 
+  // Azuriranje recenzije
   async update(id: number, userId: number, title: string, body: string, rating: number): Promise<boolean> {
     try {
       const query = `UPDATE reviews SET title = ?, body = ?, rating = ? WHERE id = ? AND user_id = ?`;
@@ -69,6 +72,7 @@ export class ReviewRepository implements IReviewRepository {
     } catch { return false; }
   }
 
+  // Brisanje recenzije
   async delete(id: number, userId: number): Promise<boolean> {
     try {
       const query = `DELETE FROM reviews WHERE id = ? AND user_id = ?`;
@@ -77,6 +81,7 @@ export class ReviewRepository implements IReviewRepository {
     } catch { return false; }
   }
 
+  // Dohvatanje recenzija po ID-u korisnika
   async getByUserId(userId: number): Promise<ReviewDto[]> {
     try {
       const query = `

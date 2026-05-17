@@ -4,7 +4,9 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 import db from "../../connection/DbConnectionPool";
 
 export class UserRepository implements IUserRepository {
-async create(user: User): Promise<User> {
+
+  // Kreiranje novog korisnika
+  async create(user: User): Promise<User> {
     try {
       const query = `
         INSERT INTO users (username, email, password_hash, full_name, profile_image, role) 
@@ -30,6 +32,7 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Dohvatanje korisnika po ID-u
   async getById(id: number): Promise<User> {
     try {
       const query = `SELECT *FROM users WHERE id = ?`;
@@ -46,6 +49,7 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Dohvatanje korisnika po username-u
   async getByUsername(username: string): Promise<User> {
     try {
       const query = `SELECT * FROM users WHERE username = ?`;
@@ -63,6 +67,7 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Dohvatanje korisnika po email-u
   async getByEmail(email: string): Promise<User> {
     try {
       const query = `SELECT * FROM users WHERE email = ?`;
@@ -78,19 +83,25 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Dohvatanje svih korisnika
   async getAll(): Promise<User[]> {
     try {
-      const query = `SELECT *FROM users ORDER BY id ASC`;
+      const query = `SELECT id, username, email, role FROM users ORDER BY id ASC`;
       const [rows] = await db.execute<RowDataPacket[]>(query);
 
-      return rows.map(
-        (row) => new User(row.id, row.korisnickoIme, row.uloga, row.lozinka)
-      );
-    } catch {
+      return rows.map(r => ({
+          id: r.id,
+          username: r.username,
+          email: r.email,
+          role: r.role
+      } as User));
+    } catch (error) {
+      console.error("Greška pri dohvatanju svih korisnika:", error);
       return [];
     }
   }
 
+  // Ažuriranje korisnika
   async update(user: User): Promise<User> {
     try {
       const query = `
@@ -118,6 +129,7 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Brisanje korisnika
   async delete(id: number): Promise<boolean> {
     try {
       const query = `
@@ -133,6 +145,7 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Provera postojanja korisnika po ID-u
   async exists(id: number): Promise<boolean> {
     try {
       const query = `
@@ -149,9 +162,9 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Pretraga korisnika po imenu
   async pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]> {
     try {
-      // ISPRAVLJENO: Selektujemo profile_image iz baze
       const sql = 'SELECT id, username, profile_image FROM users WHERE username LIKE ? LIMIT 10';
       const [rows] = await db.execute(sql, [`%${query}%`]);
       return rows as { id: number; username: string; profile_image: string | null }[];
@@ -161,6 +174,7 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Ažuriranje lozinke i/ili profilne slike korisnika
   async updateUser(userId: number, passwordHash?: string, profileImage?: string): Promise<boolean> {
     try {
       const updates = [];
@@ -188,6 +202,7 @@ async create(user: User): Promise<User> {
     }
   }
 
+  // Dohvatanje hash-a lozinke korisnika
   async getPasswordHash(userId: number): Promise<string | null> {
     try {
       const [rows] = await db.execute<RowDataPacket[]>('SELECT password_hash FROM users WHERE id = ?', [userId]);
@@ -195,6 +210,18 @@ async create(user: User): Promise<User> {
       return null;
     } catch {
       return null;
+    }
+  }
+
+  // Promena uloge korisnika
+  async updateRole(id: number, newRole: string): Promise<boolean> {
+    try {
+      const query = `UPDATE users SET role = ? WHERE id = ?`;
+      const [result] = await db.execute<ResultSetHeader>(query, [newRole, id]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Greška pri promeni uloge korisnika:", error);
+      return false;
     }
   }
 }

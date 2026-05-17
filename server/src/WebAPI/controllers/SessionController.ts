@@ -23,6 +23,7 @@ export class SessionController {
     this.router.delete("/:id/players/:userId", authenticate, this.removePlayer.bind(this));
   }
 
+  // Kreiranje nove sesije
   private async create(req: Request, res: Response) {
     try {
       const { gameId, date, durationMin, note, playerIds } = req.body;
@@ -39,6 +40,7 @@ export class SessionController {
     }
   }
 
+  // Dohvatanje sesija koje je kreirao trenutni korisnik
   private async getMojeSesije(req: Request, res: Response) {
     const userId = req.user?.id;
     if (!userId) return res.status(401).send();
@@ -46,29 +48,34 @@ export class SessionController {
     res.json({ success: true, data: sesije });
   }
 
+  // Dohvatanje detalja sesije po ID-u
   private async getById(req: Request, res: Response) {
     const sesija = await this.sessionService.dohvatiDetaljeSesije(Number(req.params.id));
     if (sesija) res.json({ success: true, data: sesija });
     else res.status(404).json({ success: false, message: "Sesija nije pronađena" });
   }
 
+  // Brisanje sesije (samo kreator može obrisati)
   private async delete(req: Request, res: Response) {
     const uspeh = await this.sessionService.obrisiSesiju(Number(req.params.id), req.user!.id);
     if (uspeh) res.json({ success: true });
     else res.status(403).json({ success: false, message: "Samo kreator može obrisati sesiju" });
   }
 
+  // Ažuriranje rezultata igrača u sesiji
   private async updatePlayer(req: Request, res: Response) {
     const { score, winner } = req.body;
     const uspeh = await this.sessionService.azurirajIgraca(Number(req.params.id), Number(req.params.userId), score, winner);
     res.json({ success: uspeh });
   }
 
+  // Uklanjanje igrača iz sesije
   private async removePlayer(req: Request, res: Response) {
     const uspeh = await this.sessionService.ukloniIgraca(Number(req.params.id), Number(req.params.userId));
     res.json({ success: uspeh });
   }
 
+  // Ažuriranje sesije
   private async updateSession(req: Request, res: Response) {
     try {
       const { date, durationMin, note } = req.body;
@@ -80,6 +87,7 @@ export class SessionController {
     }
   }
 
+  // Dodavanje igrača u sesiju
   private async addPlayer(req: Request, res: Response) {
     try {
       const { userId } = req.body; // ID korisnika kojeg dodaje

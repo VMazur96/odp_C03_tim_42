@@ -9,16 +9,19 @@ import bcrypt from "bcrypt";
 export class UserService implements IUserService {
   public constructor(private userRepository: IUserRepository) {}
 
-  async getSviKorisnici(): Promise<UserDto[]> {
-    const korisnici: User[] = await this.userRepository.getAll();
-    const korisniciDto: UserDto[] = korisnici.map(
-      (user) => new UserDto(user.id, user.username, user.role)
-    );
-
-    return korisniciDto;
+  // Dohvatanje svih korisnika
+  async getSviKorisnici(): Promise<any[]> {
+    const korisnici = await this.userRepository.getAll();
+    return korisnici.map(u => ({
+      id: u.id,
+      username: u.username,
+      email: u.email,
+      role: u.role
+    }));
   }
 
- async getTrenutniKorisnik(id: number): Promise<UserDto | null> {
+  // Dohvatanje trenutnog korisnika po ID-u
+  async getTrenutniKorisnik(id: number): Promise<UserDto | null> {
     try {
       const [rows] = await db.execute<RowDataPacket[]>(
         "SELECT id, username, role, profile_image FROM users WHERE id = ?", 
@@ -27,8 +30,6 @@ export class UserService implements IUserService {
       
       if (rows.length > 0) {
         const row = rows[0];
-        // Prilagođavamo se tvom DTO-u:
-        // row.username ide u korisnickoIme, row.role ide u uloga
         return new UserDto(
             row.id,
             row.username, 
@@ -43,10 +44,12 @@ export class UserService implements IUserService {
     }
   }
 
+  // Pretraga korisnika
   async pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]> {
     return await this.userRepository.pretragaKorisnika(query);
   }
 
+  // Ažuriranje profila korisnika
   async azurirajProfil(userId: number, staraLozinka?: string, novaLozinka?: string, novaSlika?: string): Promise<boolean> {
     let passwordHash = undefined;
 
@@ -77,4 +80,11 @@ export class UserService implements IUserService {
     return await this.userRepository.updateUser(userId, passwordHash, novaSlika);
   }
 
+  // Promena uloge korisnika
+  async promeniUlogu(userId: number, novaUloga: string): Promise<boolean> {
+    if (!['guest', 'player', 'admin'].includes(novaUloga)) {
+        throw new Error("Dozvoljene uloge su 'guest', 'player' i 'admin'.");
+    }
+    return await this.userRepository.updateRole(userId, novaUloga);
+  }
 }

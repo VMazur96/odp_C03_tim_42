@@ -7,6 +7,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export class SessionRepository implements ISessionRepository {
   
+  // Kreiranje nove sesije
   async createSession(session: Session): Promise<number> {
     try {
       const query = `
@@ -30,6 +31,7 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
+  // Dohvatanje sesije po ID-u sa detaljima o igri i igracima
   async getSessionById(id: number): Promise<SessionDto | null> {
     try {
       const sessionQuery = `
@@ -78,6 +80,7 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
+  // Dohvatanje svih sesija koje je korisnik odigrao
   async getUserSessions(userId: number): Promise<SessionDto[]> {
     try {
       const query = `
@@ -103,6 +106,7 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
+  // Azuriranje sesije
   async updateSession(session: Session): Promise<boolean> {
     try {
       const mysqlDate = session.date.toISOString().slice(0, 19).replace('T', ' ');
@@ -121,6 +125,7 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
+  // Brisanje sesije
   async deleteSession(id: number, creatorId: number): Promise<boolean> {
     try {
       const [rows] = await db.execute<RowDataPacket[]>('SELECT creator_id FROM sessions WHERE id = ?', [id]);
@@ -136,6 +141,7 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
+  // Dodavanje igraca u sesiju
   async addPlayer(sp: SessionPlayer): Promise<boolean> {
     try {
       const query = `
@@ -150,6 +156,7 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
+  // Azuriranje rezultata igraca u sesiji
   async updatePlayer(sp: SessionPlayer): Promise<boolean> {
     try {
       const query = `
@@ -167,6 +174,7 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
+  // Uklanjanje igraca iz sesije
   async removePlayer(sessionId: number, userId: number): Promise<boolean> {
     try {
       const query = 'DELETE FROM session_players WHERE session_id = ? AND user_id = ?';

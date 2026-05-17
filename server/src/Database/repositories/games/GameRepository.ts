@@ -6,27 +6,35 @@ import db from "../../connection/DbConnectionPool";
 export class GameRepository implements IGameRepository {
   
   // Dodavanje nove igre u bazu
-  async create(game: Game): Promise<Game> {
+  async create(game: Game, mechanicIds: number[]): Promise<Game> {
     try {
-      const query = `
-        INSERT INTO games (
-          name, description, min_players, max_players, 
-          duration_min, weight, release_year, publisher, cover_image
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      // 1. Upisujemo igru u tabelu games
+      const queryGame = `
+        INSERT INTO games 
+        (name, description, min_players, max_players, duration_min, weight, release_year, publisher, cover_image) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
-      const [result] = await db.execute<ResultSetHeader>(query, [
+      
+      const [result] = await db.execute<ResultSetHeader>(queryGame, [
         game.name, game.description, game.min_players, game.max_players,
         game.duration_min, game.weight, game.release_year, game.publisher, game.cover_image
       ]);
 
-      if (result.insertId) {
-        game.id = result.insertId;
-        return game;
+      const noviGameId = result.insertId;
+      game.id = noviGameId; 
+
+      // 2. Upisujemo mehanike u veznu tabelu
+      if (mechanicIds && mechanicIds.length > 0) {
+        for (const mechId of mechanicIds) {
+          const queryMech = 'INSERT INTO game_mechanics (game_id, mechanic_id) VALUES (?, ?)';
+          await db.execute(queryMech, [noviGameId, mechId]);
+        }
       }
-      return new Game();
+
+      return game;
     } catch (error) {
-      console.error("Greska pri kreiranju igre:", error);
-      return new Game();
+      console.error("Greška pri upisu igre u bazu:", error);
+      throw new Error("Greška na bazi podataka.");
     }
   }
 
@@ -67,7 +75,7 @@ export class GameRepository implements IGameRepository {
     }
   }
 
-  // Pronalazenje svih igara za katalog (SADA RACUNA PROSEK I VUCE MEHANIKE)
+  // Pronalazenje svih igara za katalog
   async getAll(): Promise<Game[]> {
     try {
       const query = `
@@ -100,7 +108,7 @@ export class GameRepository implements IGameRepository {
   }
 
   // Azuriranje postojece igre
-  async update(game: Game): Promise<Game> {
+  async update(game: Game, mechanicIds: number[]): Promise<Game> {
     try {
       const query = `
         UPDATE games 
@@ -114,13 +122,24 @@ export class GameRepository implements IGameRepository {
         game.cover_image, game.id
       ]);
 
-      if (result.affectedRows > 0) {
-        return game;
+      if (result.affectedRows === 0) {
+        return new Game();
       }
-      return new Game();
+
+      const queryDeleteMechs = 'DELETE FROM game_mechanics WHERE game_id = ?';
+      await db.execute(queryDeleteMechs, [game.id]);
+
+      if (mechanicIds && mechanicIds.length > 0) {
+        for (const mechId of mechanicIds) {
+          const queryInsertMech = 'INSERT INTO game_mechanics (game_id, mechanic_id) VALUES (?, ?)';
+          await db.execute(queryInsertMech, [game.id, mechId]);
+        }
+      }
+
+      return game;
     } catch (error) {
-      console.error("Greska pri azuriranju igre:", error);
-      return new Game();
+      console.error("Greška pri ažuriranju igre:", error);
+      throw new Error("Greška na bazi podataka prilikom ažuriranja.");
     }
   }
 
@@ -132,8 +151,20 @@ export class GameRepository implements IGameRepository {
       
       return result.affectedRows > 0;
     } catch (error) {
-      console.error("Greska pri brisanju igre:", error);
+      console.error("Greška pri brisanju igre:", error);
       return false;
+    }
+  }
+
+  // Provera da li je igra u upotrebi
+  async isGameInUse(id: number): Promise<boolean> {
+    try {
+      const query = 'SELECT COUNT(*) as count FROM user_games WHERE game_id = ?';
+      const [rows] = await db.execute<RowDataPacket[]>(query, [id]);
+      return rows[0].count > 0;
+    } catch (error) {
+      console.error("Greška pri proveri upotrebe igre:", error);
+      return true;
     }
   }
 }

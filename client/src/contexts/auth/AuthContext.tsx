@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, type ReactNode } from 'react
 import { jwtDecode } from 'jwt-decode';
 import type { AuthContextType } from '../../types/auth/AuthContext';
 import type { AuthUser } from '../../types/auth/AuthUser';
-import { ObrišiVrednostPoKljuču, PročitajVrednostPoKljuču, SačuvajVrednostPoKljuču } from '../../helpers/local_storage';
+import { ObrisiVrednostPoKljucu, procitajVrednostPoKljucu, SacuvajVrednostPoKljucu } from '../../helpers/local_storage';
 import type { JwtTokenClaims } from '../../types/auth/JwtTokenClaims';
 import axios from "axios";
 import { usersApi } from '../../api_services/users/UsersAPIService';
@@ -18,7 +18,6 @@ const decodeJWT = (token: string): JwtTokenClaims | null => {
                 id: decoded.id,
                 username: decoded.username,
                 role: decoded.role,
-                // Ne povlačimo više sliku odavde jer je nema u tokenu
             };
         }
         
@@ -47,11 +46,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     useEffect(() => {
         const initAuth = async () => {
-            const savedToken = PročitajVrednostPoKljuču("authToken");
+            const savedToken = procitajVrednostPoKljucu("authToken");
             
             if (savedToken) {
                 if (isTokenExpired(savedToken)) {
-                    ObrišiVrednostPoKljuču("authToken");
+                    ObrisiVrednostPoKljucu("authToken");
                     setIsLoading(false);
                     return;
                 }
@@ -60,14 +59,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 if (claims) {
                     setToken(savedToken);
                     
-                    // Odmah postavljamo osnovne podatke iz tokena
                     setUser({
                         id: claims.id,
                         username: claims.username,
                         role: claims.role
                     });
 
-                    // Naknadno dohvatamo sliku sa servera
                     try {
                         const fullUser = await usersApi.getMe(savedToken);
                         if (fullUser) {
@@ -82,7 +79,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         console.error("Problem sa učitavanjem profila:", err);
                     }
                 } else {
-                    ObrišiVrednostPoKljuču("authToken");
+                    ObrisiVrednostPoKljucu("authToken");
                 }
             }
             
@@ -97,7 +94,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         if (claims && !isTokenExpired(newToken)) {
             setToken(newToken);
-            SačuvajVrednostPoKljuču("authToken", newToken);
+            SacuvajVrednostPoKljucu("authToken", newToken);
             
             setUser({
                 id: claims.id,
@@ -105,7 +102,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 role: claims.role,
             });
 
-            // Čim se uloguje, povuci sliku
             const fullUser = await usersApi.getMe(newToken);
             if (fullUser) {
                 setUser({
@@ -122,7 +118,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const logout = async () => {
         try {
-            const currentToken = PročitajVrednostPoKljuču("authToken");
+            const currentToken = procitajVrednostPoKljucu("authToken");
                 
             if (currentToken) {
                 await axios.post(`${import.meta.env.VITE_API_URL}auth/logout`, {}, {
@@ -135,7 +131,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         setToken(null);
         setUser(null);
-        ObrišiVrednostPoKljuču("authToken");
+        ObrisiVrednostPoKljucu("authToken");
     };
 
     const isAuthenticated = !!user && !!token;

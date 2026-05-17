@@ -52,11 +52,9 @@ export interface IUserRepository {
    * @returns Promise koji vraća true ako korisnik postoji, false inače
    */
   exists(id: number): Promise<boolean>;
-
   getByEmail(email: string): Promise<User>; //pronalazi korisnika po email adresi
-
   updateUser(userId: number, passwordHash?: string, profileImage?: string): Promise<boolean>;
-
   getPasswordHash(userId: number): Promise<string | null>;
-
-pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]>;}
+  pretragaKorisnika(query: string): Promise<{ id: number; username: string; profile_image: string | null }[]>;
+  updateRole(id: number, newRole: string): Promise<boolean>;
+}

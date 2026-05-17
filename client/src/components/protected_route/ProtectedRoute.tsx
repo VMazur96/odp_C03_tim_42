@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { ObrišiVrednostPoKljuču } from "../../helpers/local_storage";
+import { ObrisiVrednostPoKljucu } from "../../helpers/local_storage";
 import { useAuth } from "../../hooks/auth/useAuthHook";
 
 type ProtectedRouteProps = {
@@ -18,7 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const location = useLocation();
 
   const handleLogout = () => {
-    ObrišiVrednostPoKljuču("authToken");
+    ObrisiVrednostPoKljucu("authToken");
     logout();
   };
 
@@ -33,9 +33,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Ako je potrebna specifična uloga, proveri je
-  if (requiredRole && user?.uloga !== requiredRole) {
+  if (requiredRole && user?.role !== requiredRole) {
     return (
-    <main className="min-h-screen bg-gradient-to-tr from-slate-600/75 to-red-800/70 flex items-center justify-center">
+    <main className="min-h-screen bg-linear-to-tr from-slate-600/75 to-red-800/70 flex items-center justify-center">
         <div className="bg-white/30 backdrop-blur-lg shadow-lg border border-red-300 rounded-2xl p-10 w-full max-w-lg text-center">
           <h2 className="text-3xl font-bold text-red-800/70 mb-4">
             Немате дозволу

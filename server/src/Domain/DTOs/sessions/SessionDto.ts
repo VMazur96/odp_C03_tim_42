@@ -12,7 +12,7 @@ export interface SessionDto {
   gameId: number;
   gameName: string;
   coverImage: string | null;
-  date: string; // Datume ćemo slati kao string (ISO format)
+  date: string;
   durationMin: number;
   note: string | null;
   players: SessionPlayerDto[];

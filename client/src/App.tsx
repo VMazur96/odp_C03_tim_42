@@ -13,8 +13,15 @@ import MojaKolekcijaStranica from "./pages/kolekcija/MojaKolekcijaStranica";
 import ProfilStranica from "./pages/profil/ProfilStranica";
 import MojeSesijeStranica from "./pages/sessions/MojeSesijeStranica";
 import NovaSesijaStranica from "./pages/sessions/NovaSesijaStranica";
-import { PročitajVrednostPoKljuču } from "./helpers/local_storage";
+import { procitajVrednostPoKljucu } from "./helpers/local_storage";
 import MojeRecenzijeStranica from './pages/reviews/MojeRecenzijeStranica';
+import { ProtectedRoute } from './components/protected_route/ProtectedRoute';
+import UpravljanjeMehanikamaStranica from './pages/admin/UpravljanjeMehanikamaStranica';
+import DodajIgruStranica from './pages/admin/DodajIgruStranica';
+import IzmeniIgruStranica from './pages/admin/IzmeniIgruStranica';
+import UpravljanjeKorisnicimaStranica from './pages/admin/UpravljanjeKorisnicimaStranica';
+import AuditLogStranica from './pages/admin/AuditLogStranica';
+import AdminDashboardStranica from './pages/admin/AdminDashboardStranica';
 import "./index.css";
 
 function App() {
@@ -22,7 +29,7 @@ function App() {
   const navigate = useNavigate();
   const authContext = useContext(AuthContext);
   
-  const prijavljen = authContext?.isAuthenticated || !!PročitajVrednostPoKljuču("authToken");
+  const prijavljen = authContext?.isAuthenticated || !!procitajVrednostPoKljucu("authToken");
 
   const handleLogout = async () => {
     if (authContext) {
@@ -47,9 +54,10 @@ function App() {
             </Link>
           ) : (
             <>
-              <Link to={`/${authContext?.user?.role || 'player'}-dashboard`} className={`nav-btn px-4 py-2 rounded ${location.pathname.includes('dashboard') ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
+              <Link to={`/${authContext?.user?.role || 'player'}/dashboard`} className={`nav-btn px-4 py-2 rounded ${location.pathname.includes('dashboard') ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                 Dashboard
               </Link>
+
               <Link to="/kolekcija" className={`nav-btn px-4 py-2 rounded ${location.pathname === '/kolekcija' ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                 Moja Kolekcija
               </Link>
@@ -58,7 +66,6 @@ function App() {
                 Moje Sesije
               </Link>
 
-              {/* DODATO: MOJE RECENZIJE U NAVBARU */}
               <Link to="/moje-recenzije" className={`nav-btn px-4 py-2 rounded ${location.pathname.includes('/moje-recenzije') ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                 Moje Recenzije
               </Link>
@@ -87,7 +94,7 @@ function App() {
         <Route path="/igre/:id" element={<DetaljiIgreStranica />} />
 
         {/* PROTECTED RUTE */}
-        <Route path="/player-dashboard" element={<PlayerDashboard />} />
+        <Route path="/player/dashboard" element={<PlayerDashboard />} />
         <Route path="/kolekcija" element={<MojaKolekcijaStranica />} />
         <Route path="/profil" element={<ProfilStranica />} />
         
@@ -96,9 +103,15 @@ function App() {
 
         <Route path="/moje-recenzije" element={<MojeRecenzijeStranica />} />
         
-        <Route path="/admin-dashboard" element={<div className="p-10 text-center text-2xl font-bold">Admin Panel (U izradi)</div>} />
+        <Route path="/admin/mehanike" element={<ProtectedRoute requiredRole="admin"><UpravljanjeMehanikamaStranica /></ProtectedRoute>} />        
+        <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboardStranica /></ProtectedRoute>} />
+        <Route path="/admin/dodaj-igru" element={<ProtectedRoute requiredRole="admin"><DodajIgruStranica /></ProtectedRoute>} />
+        <Route path="/admin/izmeni-igru/:id" element={<ProtectedRoute requiredRole="admin"><IzmeniIgruStranica /></ProtectedRoute>} />
+        <Route path="/admin/korisnici" element={<ProtectedRoute requiredRole="admin"><UpravljanjeKorisnicimaStranica /></ProtectedRoute>} />
+        <Route path="/admin/audit-log" element={<ProtectedRoute requiredRole="admin"><AuditLogStranica /></ProtectedRoute>} />
 
         <Route path="/404" element={<NotFoundStranica />} />
+        
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
     </div>

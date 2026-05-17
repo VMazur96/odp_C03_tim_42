@@ -60,6 +60,19 @@ export default function KatalogStranica() {
     }
   };
 
+  const handleObrisiIgru = async (igraId: number, nazivIgre: string) => {
+    if (window.confirm(`Da li ste sigurni da želite da obrišete igru "${nazivIgre}"?`)) {
+      const rezultat = await gameApi.deleteGame(igraId);
+      if (rezultat.success) {
+        alert(rezultat.message);
+        // Osveži listu igara nakon brisanja
+        setIgre(igre.filter(igra => igra.id !== igraId));
+      } else {
+        alert(`Greška: ${rezultat.message}`); 
+      }
+    }
+  };
+
   const sveMehanike = Array.from(
     new Set(igre.flatMap(igra => igra.mechanics || []))
   ).sort();
@@ -198,7 +211,6 @@ export default function KatalogStranica() {
                   <div className="p-4 pt-0 border-t border-gray-100 mt-4 bg-gray-50">
                     <select
                       value={statusiIgara[igra.id] || 'wishlist'}
-                      // PROMENJENO: Pretvori e.target.value u GameStatus
                       onChange={(e) => handleStatusChange(igra.id, e.target.value as GameStatus)}
                       className="w-full p-2 mb-2 text-sm border border-gray-300 rounded focus:ring focus:ring-blue-200 focus:outline-none"
                     >
@@ -231,6 +243,24 @@ export default function KatalogStranica() {
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition"
                     >
                       Dodaj u kolekciju
+                    </button>
+                  </div>
+                )}
+
+                {/* ADMIN OPCIJE - Brisanje i Izmena */}
+                {authContext?.user?.role === 'admin' && (
+                  <div className="p-4 border-t border-gray-200 bg-red-50 flex justify-between gap-2">
+                    <Link 
+                      to={`/admin/izmeni-igru/${igra.id}`}
+                      className="w-1/2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-2 rounded transition text-center text-sm"
+                    >
+                      Izmeni Igru
+                    </Link>
+                    <button
+                      onClick={() => handleObrisiIgru(igra.id, igra.name)}
+                      className="w-1/2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-2 rounded transition text-sm"
+                    >
+                      Obriši Igru
                     </button>
                   </div>
                 )}

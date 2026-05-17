@@ -12,10 +12,12 @@ export class UserGameController {
     this.initializeRoutes();
   }
 
+  // Dohvatanje routera za povezivanje sa glavnim routerom
   public getRouter(): Router {
     return this.router;
   }
 
+  // Inicijalizacija ruta i povezivanje sa metodama
   private initializeRoutes() {
     this.router.get('/ping', (req: Request, res: Response) => {
         res.status(200).json({ poruka: "Kontroler je ziv i povezan!" });
@@ -28,10 +30,9 @@ export class UserGameController {
     this.router.delete('/:gameId', authenticate, this.obrisiIgru.bind(this));
   }
 
+  // Dodavanje igre u kolekciju korisnika
   private async dodajIgru(req: Request, res: Response): Promise<void> {
     try {
-      console.log("2. KONTROLER: Ušao u dodajIgru. Body je:", req.body);
-      
       const userId = req.user?.id; 
       const { gameId, status, rating, note } = req.body;
 
@@ -48,17 +49,20 @@ export class UserGameController {
       const uspesno = await this.userGameService.dodajIgru(userId, gameId, status, rating || null, note || null);
       
       if (uspesno) {
-        console.log("3. KONTROLER: Uspešno upisano u bazu!");
         res.status(200).json({ success: true, message: 'Igra uspesno dodata u kolekciju.' });
       } else {
         res.status(400).json({ success: false, message: 'Nije moguce dodati igru u kolekciju.' });
       }
-    } catch (error) {
-      console.error("Greska u kontroleru pri dodavanju igre:", error);
-      res.status(500).json({ success: false, message: 'Serverska greska.' });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        res.status(400).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: 'Serverska greska.' });
+      }
     }
   }
 
+  // Dohvatanje kolekcije igara korisnika
   private async dohvatiKolekciju(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
@@ -75,7 +79,7 @@ export class UserGameController {
   }
 
   // Izmena igre u kolekciji
-private async izmeniIgru(req: Request, res: Response): Promise<void> {
+  private async izmeniIgru(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
       const gameId = parseInt(req.params.gameId as string, 10);
@@ -87,11 +91,18 @@ private async izmeniIgru(req: Request, res: Response): Promise<void> {
       }
 
       const uspesno = await this.userGameService.izmeniIgru(userId, gameId, status, rating || null, note || null);
-      if (uspesno) res.status(200).json({ success: true, message: 'Igra izmenjena.' });
-      else res.status(400).json({ success: false, message: 'Greška pri izmeni.' });
-
-    } catch (error) {
-      res.status(500).json({ success: false, message: 'Serverska greska.' });
+      if (uspesno) {
+        res.status(200).json({ success: true, message: 'Igra izmenjena.' });
+      } else {
+        res.status(400).json({ success: false, message: 'Greška pri izmeni.' });
+      }
+    } catch (error: unknown) {
+      // PAMETNI CATCH:
+      if (error instanceof Error) {
+        res.status(400).json({ success: false, message: error.message });
+      } else {
+        res.status(500).json({ success: false, message: 'Serverska greska.' });
+      }
     }
   }
 

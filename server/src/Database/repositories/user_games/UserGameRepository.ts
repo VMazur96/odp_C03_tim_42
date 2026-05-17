@@ -5,6 +5,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 
 export class UserGameRepository implements IUserGameRepository {
   
+  // Dodavanje igre u kolekciju (ili ažuriranje ako već postoji)
   async dodajUKolekciju(userGame: UserGame): Promise<boolean> {
     try {
       const query = `
@@ -29,6 +30,7 @@ export class UserGameRepository implements IUserGameRepository {
     }
   }
 
+  // Dohvatanje kolekcije korisnika
   async dohvatiKolekcijuKorisnika(userId: number): Promise<UserGame[]> {
     try {
         const [userGamesRows] = await db.execute<RowDataPacket[]>(

@@ -26,7 +26,7 @@ export default function NovaSesijaStranica() {
     const ucitajIgre = async () => {
       const kolekcija = await userGamesApi.dohvatiMojuKolekciju();
       // Filtrira da moze da bira samo igre koje poseduje (owned)
-      setMojeIgre(kolekcija.filter(g => g.status === 'owned' || g.status === 'previously_owned'));
+      setMojeIgre(kolekcija.filter(g => g.status === 'owned'));
     };
     ucitajIgre();
   }, []);

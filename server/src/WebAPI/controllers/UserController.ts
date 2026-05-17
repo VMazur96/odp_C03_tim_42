@@ -18,12 +18,14 @@ export class UserController {
     // ostale metode, npr. /api/v1/user/1 <--- user po ID-ju 1
     //  HTTP method, path,    middlewares,...                   connected method
     this.router.get("/users/me", authenticate, this.trenutniKorisnik.bind(this));
-    this.router.get("/users", authenticate, authorize("admin"), this.korisnici.bind(this));
+    this.router.get("/users/all", authenticate, authorize("admin"), this.korisnici.bind(this));
     this.router.get("/users/search", authenticate, this.pretraga.bind(this));
     this.router.put("/users/me", authenticate, this.azurirajProfil.bind(this));
+    this.router.get("/users/:id", this.javniProfil.bind(this));
+    this.router.put("/users/:id/role", authenticate, authorize("admin"), this.promeniUloguKorisnika.bind(this));
   }
 
-
+  // Dohvatanje profila trenutnog korisnika
   private async trenutniKorisnik(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.user?.id;
@@ -35,6 +37,24 @@ export class UserController {
       res.status(200).json({ success: true, data: korisnik });
     } catch (error) {
       res.status(500).json({ success: false, message: "Serverska greska." });
+    }
+  }
+
+  // Dohvatanje javnog profila korisnika po ID-ju
+  private async javniProfil(req: Request, res: Response): Promise<void> {
+    try {
+      if (req.params.id === 'me' || req.params.id === 'search') return; 
+
+      const id = parseInt(req.params.id as string, 10);
+      const korisnik = await this.userService.getTrenutniKorisnik(id); 
+      
+      if (korisnik) {
+        res.status(200).json({ success: true, data: korisnik });
+      } else {
+        res.status(404).json({ success: false, message: "Korisnik nije pronađen." });
+      }
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Serverska greška." });
     }
   }
   /**
@@ -53,6 +73,7 @@ export class UserController {
     }
   }
 
+  // Pretraga korisnika po imenu
   private async pretraga(req: Request, res: Response): Promise<void> {
     try {
       const q = req.query.q as string;
@@ -96,6 +117,29 @@ export class UserController {
       } else {
         res.status(500).json({ success: false, message: "Greška na serveru." });
       }
+    }
+  }
+
+  // Promena uloge korisnika (samo admin može menjati uloge)
+  private async promeniUloguKorisnika(req: Request, res: Response): Promise<void> {
+    try {
+      const targetUserId = parseInt(req.params.id as string, 10);
+      const { role } = req.body; 
+      
+      if (req.user?.id === targetUserId) {
+        res.status(400).json({ success: false, message: "Ne možete sami sebi promeniti ulogu!" });
+        return;
+      }
+
+      const success = await this.userService.promeniUlogu(targetUserId, role);
+      
+      if (success) {
+        res.status(200).json({ success: true, message: "Uloga uspešno promenjena." });
+      } else {
+        res.status(404).json({ success: false, message: "Korisnik nije pronađen." });
+      }
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message || "Greška servera." });
     }
   }
 

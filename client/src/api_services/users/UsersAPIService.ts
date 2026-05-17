@@ -4,6 +4,7 @@ import type { IUsersAPIService } from "./IUsersAPIService";
 
 const API_URL: string = import.meta.env.VITE_API_URL + "users";
 
+// API servis za korisnike
 export const usersApi: IUsersAPIService = {
   async getSviKorisnici(token: string): Promise<UserDto[]> {
     try {
@@ -18,6 +19,7 @@ export const usersApi: IUsersAPIService = {
     }
   },
 
+  // Dohvata informacije o trenutno prijavljenom korisniku
   async getMe(token: string): Promise<UserDto | null> {
     try {
       const res = await axios.get<{success: boolean, data: UserDto}>(`${API_URL}/me`, {
@@ -30,6 +32,7 @@ export const usersApi: IUsersAPIService = {
     }
   },
 
+  // Pretrazuje korisnike po imenu
  async pretragaKorisnika(query: string): Promise<UserDto[]> {
     try {
       const token = localStorage.getItem("authToken");
@@ -54,6 +57,7 @@ export const usersApi: IUsersAPIService = {
     }
   },
 
+// Azurira profil korisnika (lozinku i/ili profilnu sliku)
 async azurirajProfil(oldPassword?: string, password?: string, profileImage?: string): Promise<boolean> {
     try {
       const token = localStorage.getItem("authToken");

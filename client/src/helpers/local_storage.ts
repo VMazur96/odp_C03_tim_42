@@ -1,4 +1,4 @@
-function SačuvajVrednostPoKljuču(key: string, value: string): boolean {
+function SacuvajVrednostPoKljucu(key: string, value: string): boolean {
   try {
     localStorage.setItem(key, value)
     return true
@@ -8,7 +8,7 @@ function SačuvajVrednostPoKljuču(key: string, value: string): boolean {
   }
 }
 
-function PročitajVrednostPoKljuču(key: string): string | null {
+function procitajVrednostPoKljucu(key: string): string | null {
   try {
     return localStorage.getItem(key)
   } catch (error) {
@@ -17,7 +17,7 @@ function PročitajVrednostPoKljuču(key: string): string | null {
   }
 }
 
-function ObrišiVrednostPoKljuču(key: string): boolean {
+function ObrisiVrednostPoKljucu(key: string): boolean {
   try {
     localStorage.removeItem(key)
     return true
@@ -27,4 +27,4 @@ function ObrišiVrednostPoKljuču(key: string): boolean {
   }
 }
 
-export { SačuvajVrednostPoKljuču, PročitajVrednostPoKljuču, ObrišiVrednostPoKljuču };
+export { SacuvajVrednostPoKljucu, procitajVrednostPoKljucu, ObrisiVrednostPoKljucu };
